@@ -1,0 +1,51 @@
+.badge.badge-black {
+  background-color: #000;
+}
+i.feather.td-action {
+    font-size: 1.3em;
+}
+.pointer {
+    cursor: pointer;
+}
+.main-menu .navbar-header .navbar-brand .brand-logo {
+    background: url("/images/logo/logo.png") no-repeat;
+    background-size: 35px auto;
+    height: 50px;
+    width:35px;
+    background-position: 0 0;
+}
+.main-menu .navbar-header .navbar-brand .brand-text {
+    animation: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) 0s normal forwards 1 fadein;
+    background: url("/images/logo/logo-half.png") no-repeat;
+    background-size: auto 38px;
+    height: 38px;
+    background-position: 6px 0;
+    width:100px;
+}
+.nav .modern-nav-toggle {
+    padding: 10px 0;
+}
+table.dataTable th.dt-nowrap,
+table.dataTable td.dt-nowrap {
+    white-space: nowrap;
+}
+a.buy-now.vs-button {
+    box-shadow: 0 1px 20px 1px #fb434f;
+    padding: 0.65rem 1.5rem;
+    background: #fb434f;
+    color: #fff;
+    border-radius: 6px;
+}
+section.top-side-up,
+div.top-side-up {
+    margin-top: -20px!important;
+}
+fieldset .form-control-position {
+    top: 22px;
+}
+fieldset div.error {
+    color: #f00;
+    font-size: 0.7em;
+    margin-top: 7px;
+    padding-left: 15px;
+}

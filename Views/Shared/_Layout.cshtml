@@ -1,0 +1,72 @@
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor;
+@{
+    string controller = this.ViewContext.RouteData.Values["controller"].ToString();
+    string action = this.ViewContext.RouteData.Values["action"].ToString();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="apple-touch-icon" href="~/images/ico/apple-icon-120.png">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600" rel="stylesheet">
+
+    <!--Layout Stylesheets-->    
+    <link rel="stylesheet" type="text/css" href="~/vendors/css/vendors.min.css">
+    <link rel="stylesheet" type="text/css" href="~/vendors/css/extensions/toastr.css">
+    <link rel="stylesheet" type="text/css" href="~/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="~/css/bootstrap-extended.css">
+    <link rel="stylesheet" type="text/css" href="~/css/colors.css">
+    <link rel="stylesheet" type="text/css" href="~/css/components.css">
+    <link rel="stylesheet" type="text/css" href="~/css/themes/dark-layout.css">
+    <link rel="stylesheet" type="text/css" href="~/css/themes/semi-dark-layout.css">    
+    <link rel="stylesheet" type="text/css" href="~/css/core/menu/menu-types/vertical-menu.css">
+    <link rel="stylesheet" type="text/css" href="~/css/core/colors/palette-gradient.css">
+    <link rel="stylesheet" type="text/css" href="~/css/plugins/extensions/toastr.css">    
+    <link rel="stylesheet" type="text/css" href="~/css/style.css">
+    <link rel="stylesheet newest" type="text/css" href="~/css/style.custom.css">
+</head>
+
+@if (HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated) {
+    <body class="vertical-layout vertical-menu-modern 2-columns navbar-floating footer-static menu-collapsed @(action == "Login" ? "bg-full-screen-image" : "") " data-open="click" data-menu="vertical-menu-modern" data-col="2-columns">
+        <partial name="_NavHeaderMenuPartial" />
+        <partial name="_NavSideMenuLeftPartial" />
+        <div class="app-content content">
+            <div class="content-overlay"></div>
+            <div class="header-navbar-shadow"></div>
+            <div class="content-wrapper">
+                <!--Layout Scripts-->
+                <script src="~/vendors/js/vendors.min.js"></script>
+                <script src="~/vendors/js/extensions/toastr.min.js"></script>
+                <script src="~/js/core/app-menu.js"></script>
+                <script src="~/js/core/app.js"></script>
+                <script src="~/js/scripts/components.js"></script>
+
+                <!--Render Body-->
+                @RenderBody()
+            </div>
+        </div>
+
+        <div class="sidenav-overlay"></div>
+        <div class="drag-target"></div>
+
+        <!-- BEGIN: Footer-->
+        <footer class="footer footer-static footer-light">
+            <p class="clearfix blue-grey lighten-2 mb-0">
+                <span class="float-md-left d-block d-md-inline-block mt-25">Copyright &copy; 2019 - @DateTime.Now.Year<a class="text-bold-800 grey darken-2" href="http://medifortehospital.com" target="_blank"> Mediforte Hospital, </a>All rights Reserved</span><span class="float-md-right d-none d-md-block">Hand-crafted & Made with<i class="feather icon-heart pink"></i></span>
+                <button class="btn btn-primary btn-icon scroll-top" type="button"><i class="feather icon-arrow-up"></i></button>
+            </p>
+        </footer>        
+
+        @RenderSection("Scripts", required: false)
+    </body>
+}
+else {
+    @RenderBody()
+}
+
+</html>

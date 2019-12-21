@@ -1,0 +1,168 @@
+﻿@model AfyaHMIS.ViewModel.RegistrationNewEditViewModel;
+@{
+    ViewData["Title"] = "New Patient";
+}
+
+<script src="~/vendors/formatter/jquery.formatter.min.js"></script>
+<script src="~/vendors/jquery-validation/jquery.validate.min.js"></script>
+
+<script src="~/vendors/js/pickers/pickadate/picker.js"></script>
+<script src="~/vendors/js/pickers/pickadate/picker.date.js"></script>
+<script src="~/vendors/js/pickers/pickadate/legacy.js"></script>
+
+<script src="~/js/registration-new.js"></script>
+
+<link rel="stylesheet" type="text/css" href="~/vendors/css/pickers/pickadate/pickadate.css">
+
+<style>
+    fieldset .form-control-position {
+        top: 22px;
+    }
+    fieldset div.error {
+        color: #f00;
+        font-size: 0.7em;
+        margin-top: 7px;
+        padding-left: 15px;
+    }
+</style>
+
+<div class="content-body">
+    <section class="page-users-view">
+        <div class="row">
+            <!-- patient header -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="users-view-image mr-1">
+                                <img src="~/images/avatar/patient-@(Model.Patient.Person.Gender == "f" ? "female":"default").jpg" class="users-avatar-shadow rounded mb-0 ml-1" alt="avatar" style="height:80px">
+                            </div>
+                            <div class="mt-0">
+                                <div><span class="font-weight-bold">@(Model.Patient.Person.Name)</span> / @(Model.Patient.Person.Gender.Equals("m") ? "Male" : "Female") @(Model.Patient.GetAge())</div>
+                                <div>Patient ID: @(Model.Patient.Identifier)</div>
+                                <div class="col-12 d-flex mt-1 px-0">
+                                    <a href="#" class="btn btn-primary d-none d-sm-block mr-75">Upload</a>
+                                    <a href="#" class="btn btn-outline-danger d-none d-sm-block">Reset</a>
+                                </div>
+                            </div>
+                            <div class="mt-4" style="position: absolute; right: 0">
+                                <button class="btn btn-outline-info"><i class="feather icon-printer"></i></button>
+                                <button class="btn btn-outline-warning"><i class="feather icon-mail"></i></button>
+                                <a href="/registration/visit?p=@(Model.Patient.Uuid)" class="btn btn-dark mr-1"><i class="feather icon-airplay"></i> Visit</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- patient edit start -->
+    <section class="users-edit top-side-up">
+        <div class="card">
+            <div class="card-content">
+                <div class="card-body">
+                    <div class="tab-pane active">
+                        @using (Html.BeginForm("RegisterNewPatient", "Registration", FormMethod.Post, new { id = "patient-form", onsubmit = "return validateForm()", novalidate = "novalidate", autocomplete = "off" }))
+                        {
+                            <div class="row">
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Patient Names</label>
+                                    @Html.TextBoxFor(model => model.Patient.Person.Name, new { @class = "form-control validate", placeholder = "Patient Names", required = "required" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-user"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="DateOfBirth">Date of Birth</label>
+                                    @Html.TextBoxFor(model => model.DateOfBirth, new { @class = "form-control validate pickadate", placeholder = "DD/MM/YYYY", required = "required" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-calendar"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Gender">Gender</label>
+                                    @Html.DropDownListFor(model => model.Patient.Person.Gender, Model.Gender, new { @class = "form-control" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-users"></i>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <div class="row">
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_PI_Identifier">Identification</label>
+                                    @Html.TextBoxFor(model => model.Patient.PI.Identifier, new { @class = "form-control validate", placeholder = "Identification", required = "required" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-delete"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Gender">ID Type</label>
+                                    @Html.DropDownListFor(model => model.Patient.PI.Type.Id, Model.IdType, new { @class = "form-control" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-more-vertical"></i>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <hr class="mt-0" />
+                            <div class="row">
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Address_Telephone">Telephone</label>
+                                    @Html.TextBoxFor(model => model.Patient.Person.Address.Telephone, new { @class = "form-control validate", placeholder = "Telephone", required = "required" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-phone-outgoing"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Address_Location">Physical Location</label>
+                                    @Html.TextBoxFor(model => model.Patient.Person.Address.Location, new { @class = "form-control", placeholder = "Physical Location" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-map-pin"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Address_Email">Email</label>
+                                    @Html.TextBoxFor(model => model.Patient.Person.Address.Email, new { @class = "form-control validate", placeholder = "Email Address" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-mail"></i>
+                                    </div>
+                                </fieldset>
+
+                                 <fieldset class="col-12 form-group has-icon-left">
+                                    <label for="Patient_Person_Address_Email">Patient Notes</label>
+                                    @Html.TextAreaFor(model => model.Patient.Notes, new { @class = "form-control", placeholder = "Patient Notes" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-list"></i>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 d-flex flex-sm-row flex-column justify-content-end mt-1">
+                                    <button type="submit" class="btn btn-primary glow mb-1 mb-sm-0 mr-0 mr-sm-1">
+                                        Save
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-danger">Cancel</button>
+                                </div>
+                            </div>
+
+                            @Html.HiddenFor(model => model.Patient.Id)
+                            @Html.HiddenFor(model => model.Patient.PI.Id)
+                            @Html.HiddenFor(model => model.Patient.Person.Id)
+                            @Html.HiddenFor(model => model.Patient.Person.Address.Id)
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- users edit ends -->
+
+</div>

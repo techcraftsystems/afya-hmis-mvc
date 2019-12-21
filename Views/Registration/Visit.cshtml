@@ -1,0 +1,203 @@
+﻿@model AfyaHMIS.ViewModel.RegistrationVisitViewModel;
+@{
+    ViewData["Title"] = "Patient Visit";
+}
+
+<link rel="stylesheet" type="text/css" href="~/vendors/css/forms/select/select2.min.css">
+
+<script src="~/vendors/jquery-validation/jquery.validate.min.js"></script>
+<script src="~/vendors/js/forms/select/select2.full.min.js"></script>
+<script src="~/js/registration-visit.js"></script>
+
+<style>
+    .has-icon-left .form-control,
+    .select2-container--default .select2-selection--single{
+        padding-left: 2.5rem;
+    }
+    .select2-container .select2-selection--single .select2-selection__rendered{
+        padding-left: 0;
+    }
+    div.card-title.linear {
+        border-bottom: 1px solid rgba(34, 41, 47, 0.1);
+    }
+</style>
+
+<div class="content-body">
+    <section class="page-users-view">
+        <div class="row">
+            <!-- patient header -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="users-view-image mr-1">
+                                <img src="~/images/avatar/patient-@(Model.Visit.Patient.Person.Gender == "f" ? "female":"default").jpg" class="users-avatar-shadow rounded mb-0 ml-1" alt="avatar" style="height:60px">
+                            </div>
+                            <div class="mt-1">
+                                <div><span class="font-weight-bold">@(Model.Visit.Patient.Person.Name)</span> / @(Model.Visit.Patient.Person.Gender.Equals("m") ? "Male" : "Female") @(Model.Visit.Patient.GetAge())</div>
+                                <div>Patient ID: @(Model.Visit.Patient.Identifier)</div>
+                            </div>
+                            <div class="mt-1" style="position: absolute; right: 0">
+                                <button class="btn btn-outline-info"><i class="feather icon-printer"></i></button>
+                                <button class="btn btn-outline-warning"><i class="feather icon-mail"></i></button>
+                                <a href="/registration/edit?p=@(Model.Visit.Patient.Uuid)" class="btn btn-primary mr-1"><i class="feather icon-edit"></i> Edit</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="top-side-up">
+        <div class="row">
+            <div class="col-12">
+                @using (Html.BeginForm("RegisterVisit", "Registration", FormMethod.Post, new { id = "visit-form", onsubmit = "return validateForm()", novalidate = "novalidate", autocomplete = "off" }))
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Intake Details</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body card-dashboard pt-1 row">
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Client Code</label>
+                                    @Html.DropDownListFor(model => model.Visit.ClientCode.Id, Model.Codes, new { @class = "form-control select2" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-layers"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Scheme Number</label>
+                                    @Html.TextBoxFor(model => model.Visit.SchemeNumber, new { @class = "form-control validate", placeholder = "Scheme Number", required = "required" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-tag"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Barcode</label>
+                                    @Html.TextBoxFor(model => model.Visit.Barcode, new { @class = "form-control validate", placeholder = "Barcode", required = "required" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-align-center"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Medico Legal Case</label>
+                                    @Html.DropDownListFor(model => model.Visit.MedicoLegal.Id, Model.MedicoLegal, "NOT MEDICO LEGAL", new { @class = "form-control select2" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-percent"></i>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+
+                        <div class="card-header pt-0">
+                            <h4 class="card-title linear col-12">Patient Referral</h4>
+                        </div>
+
+                        <div class="card-body card-dashboard pt-1 row">
+                            <div class="card-body card-dashboard pt-1 row">
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Referral Type</label>
+                                    @Html.DropDownListFor(model => model.Referral.Type.Id, Model.Referrals, "NO REFERRALS", new { @class = "form-control select2" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-shuffle"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Facility</label>
+                                    @Html.TextBoxFor(model => model.Referral.Facility, new { @class = "form-control validate", placeholder = "Referral Facility", required = "required" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-sidebar"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Doctors</label>
+                                    @Html.DropDownListFor(model => model.Doctor, Model.Doctors, new { @class = "max-length", multiple = "multiple" })
+                                </fieldset>
+
+                                <fieldset class="col-12 form-group has-icon-left">
+                                    <label for="Patient_Person_Address_Email">Referral Notes</label>
+                                    @Html.TextAreaFor(model => model.Referral.Notes, new { @class = "form-control", placeholder = "Referral Notes" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-list"></i>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+
+                        <div class="card-header pt-0">
+                            <h4 class="card-title linear col-12">Room to Visit</h4>
+                        </div>
+
+                        <div class="card-body card-dashboard pt-1 row">
+                            <div class="card-body card-dashboard pt-1 row">
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Room Type</label>
+                                    @Html.DropDownListFor(model => model.Queue.Room.Type.Id, Model.Rooms, new { @class = "form-control" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-smartphone"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Select Room</label>
+                                    @Html.DropDownListFor(model => model.Queue.Room.Id, Model.Types, new { @class = "form-control" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-more-vertical"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Consultation Fee</label>
+                                    @Html.TextBoxFor(model => model.Bill.Amount, new { @class = "form-control", placeholder = "0.00", @readonly = "readonly" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-tag"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 form-group has-icon-left waivers hidden">
+                                    <label for="Patient_Person_Address_Email">Waiver Reason</label>
+                                    @Html.TextAreaFor(model => model.WaiverReason, new { @class = "form-control", placeholder = "Waiver Reason" })
+                                    <div class="form-control-position">
+                                        <i class="feather icon-list"></i>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
+                                    <div class="vs-checkbox-con vs-checkbox-primary">
+                                        @Html.CheckBoxFor(model => model.Waiver)
+                                        <span class="vs-checkbox">
+                                            <span class="vs-checkbox--check">
+                                                <i class="vs-icon feather icon-check"></i>
+                                            </span>
+                                        </span>
+                                        <span class="pointer">Waiver Consultation Fees</span>
+                                    </div>
+                                </fieldset>
+
+                                 <div class="col-12 d-flex flex-sm-row flex-column justify-content-end mt-1">
+                                     <button type="submit" class="btn btn-primary glow mb-1 mb-sm-0 mr-0 mr-sm-1">
+                                         Save
+                                     </button>
+                                     <button type="reset" class="btn btn-outline-danger">Cancel</button>
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @Html.HiddenFor(model => Model.Visit.Patient.Id)
+                    @Html.HiddenFor(model => Model.Item.Service.Id)
+                    @Html.HiddenFor(model => Model.Item.Amount)
+                    @Html.HiddenFor(model => Model.DoctorString)
+                }
+            </div>
+        </div>
+    </section>
+
+</div>

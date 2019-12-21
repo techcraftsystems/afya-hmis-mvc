@@ -1,0 +1,136 @@
+﻿@model AfyaHMIS.ViewModel.RegistrationRegisterViewModel;
+@{
+    ViewData["Title"] = "Registration";
+}
+
+<script src="~/vendors/js/tables/datatable/pdfmake.min.js"></script>
+<script src="~/vendors/js/tables/datatable/vfs_fonts.js"></script>
+<script src="~/vendors/js/tables/datatable/datatables.min.js"></script>
+<script src="~/vendors/js/tables/datatable/datatables.buttons.min.js"></script>
+<script src="~/vendors/js/tables/datatable/buttons.html5.min.js"></script>
+<script src="~/vendors/js/tables/datatable/buttons.print.min.js"></script>
+<script src="~/vendors/js/tables/datatable/buttons.bootstrap.min.js"></script>
+<script src="~/vendors/js/tables/datatable/datatables.bootstrap4.min.js"></script>
+
+<script src="~/vendors/formatter/jquery.formatter.min.js"></script>
+<script src="~/js/registration-search.js"></script>
+
+<link rel="stylesheet" type="text/css" href="~/vendors/css/tables/datatable/datatables.min.css">
+<style>
+    div.search-list .col-lg-2{
+        padding: 0 7px;
+    }
+    div.dataTables_wrapper div.dataTables_filter input {
+        width: 300px;
+    }
+</style>
+
+<div class="content-body">
+    <section class="users-list-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Filters</h4>
+                <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+                <div class="heading-elements">
+                    <ul class="list-inline mb-0">
+                        <li><a data-action="collapse"><i class="feather icon-chevron-down"></i></a></li>
+                        <li><a data-action=""><i class="feather icon-rotate-cw get-patients pointer"></i></a></li>
+                        <li><a data-action=""><i class="feather icon-x"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-content collapse show">
+                <div class="card-body" style="padding-top:5px;padding-bottom:0px;">
+                    <div class="users-list-filter">
+                        <form id="search-form" autocomplete = "off">
+                            <div class="row search-list">
+                                <div class="col-12 col-sm-6 col-lg-2">
+                                    <label for="users-list-role">Patient Names</label>
+                                    <fieldset class="form-group">
+                                        <input type="text" class="form-control" id="patient-names" placeholder="Full Names" />
+                                    </fieldset>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-2">
+                                    <label for="users-list-status">Identification</label>
+                                    <fieldset class="form-group">
+                                        <input type="text" class="form-control" id="patient-identification" placeholder="Identification" />
+                                    </fieldset>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-2">
+                                    <label for="users-list-verified">Contacts</label>
+                                    <fieldset class="form-group">
+                                        <input type="text" class="form-control" id="patient-contact" placeholder="Phone/Email/Location" />
+                                    </fieldset>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-2">
+                                    <label for="users-list-department">Patient Age</label>
+                                    <fieldset class="form-group">
+                                        <input type="text" class="form-control" id="patient-age" placeholder="Age" />
+                                    </fieldset>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-2">
+                                    <label for="users-list-status">Gender</label>
+                                    <fieldset class="form-group">
+                                        <select class="form-control" id="patient-gender">
+                                            <option value="">All Gender</option>
+                                            <option value="f">Female</option>
+                                            <option value="m">Male</option>
+                                            <option value="o">Others</option>
+                                        </select>
+                                    </fieldset>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-2">
+                                    <label for="users-list-status">Previous Visit</label>
+                                    <fieldset class="form-group">
+                                        <select class="form-control" id="patient-visit">
+                                            <option value="">Any Time</option>
+                                            <option value="1">Last Month</option>
+                                            <option value="6">Last 3 Months</option>
+                                            <option value="6">Last 6 Months</option>
+                                            <option value="12">With the Year</option>
+                                        </select>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="margin-top:-20px;">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="card-body card-dashboard" style="padding-top:10px">
+                            <div class="table-responsive">
+                                <table id="patient-table" class="table zero-configuration">
+                                    <thead>
+                                        <tr>
+                                            <th>IDENTIFIER</th>
+                                            <th>NAMES</th>
+                                            <th>AGE</th>
+                                            <th>GENDER</th>
+                                            <th>CONTACTS</th>
+                                            <th>LASTVISIT</th>
+                                            <th>STATUS</th>
+                                            <th>ACTION</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<a href="/registration/new" class="vs-component vs-button buy-now vs-button-danger vs-button-filled hidden">
+    <span class="vs-button-text vs-button--text">Add New</span>
+</a>
