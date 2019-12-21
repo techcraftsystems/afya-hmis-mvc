@@ -1,11 +1,40 @@
-﻿@{
+﻿@model AfyaHMIS.ViewModel.HomeIndexViewModel;
+@{
     ViewData["Title"] = "Home";
 }
+
+<style>
+    a.module-icon.col-1 {
+        flex: 0 0 10%;
+        max-width: 10%;
+        font-weight: bold;
+        padding-bottom: 5px;
+    }
+    a.module-icon.col-1:before {
+        content : "";
+        position: absolute;
+        left    : 25%;
+        bottom  : 0;
+        height  : 1px;
+        width   : 50%;  /* or 100px */
+        border-bottom: 1px solid;
+    }
+    a.module-icon img {
+        width: 60%;
+        padding-bottom: 5px;
+    }
+</style>
 
 <div class="">
     <h1 class="display-4">Welcome to AfyaHMIS</h1>
     <hr/>
-    <div>
-        <a href="/registration/search">Registration</a>
+    <div class="home-icons row">
+        @foreach (var module in Model.Modules) {
+            <a class="module-icon col-1 mt-1 text-center @(module.Class)" href="@(module.Urls)" data-idnt="@(module.Id)">
+                <img src="~/images/icons/@(module.Icon)" />
+                <br/>
+                <span>@module.Name</span>
+            </a> 
+        }
     </div>
 </div>

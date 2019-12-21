@@ -6,10 +6,11 @@ namespace AfyaHMIS.ViewModel
 {
     public class HomeIndexViewModel
     {
-        public List<Users> Users { get; set; }
+        public List<Modules> Modules { get; set; }
+
         public HomeIndexViewModel()
         {
-            Users = new List<Users>();
+            Modules = new List<Modules>();
         }
     }
 }

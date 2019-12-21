@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using AfyaHMIS.Models;
 using Microsoft.AspNetCore.Authorization;
+using AfyaHMIS.ViewModel;
+using AfyaHMIS.Service;
 
 namespace AfyaHMIS.Controllers
 {
@@ -10,15 +12,18 @@ namespace AfyaHMIS.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ICoreService ICoreService;
 
-        public HomeController(ILogger<HomeController> logger)
-        {
+        public HomeController(ICoreService icservice, ILogger<HomeController> logger) {
             _logger = logger;
+            ICoreService = icservice;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(HomeIndexViewModel model)
         {
-            return View();
+            model.Modules = ICoreService.GetApplicationModules();
+
+            return View(model);
         }
 
         public IActionResult Privacy()
