@@ -73,4 +73,18 @@ namespace AfyaHMIS.ViewModel
             WaiverReason = "";
         }
     }
+
+    public class RegistrationPateintsModel
+    {
+
+    }
+
+    public class RegistrationPateintsViewModel
+    {
+        public Patient Patient { get; set; }
+
+        public RegistrationPateintsViewModel() {
+            Patient = new Patient();
+        }
+    }
 }

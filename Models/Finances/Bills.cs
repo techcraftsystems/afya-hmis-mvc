@@ -1,4 +1,5 @@
 ﻿using System;
+using AfyaHMIS.Models.Administrations;
 using AfyaHMIS.Models.Registrations;
 using AfyaHMIS.Service;
 
@@ -11,6 +12,7 @@ namespace AfyaHMIS.Models.Finances
         public long Id { get; set; }
         public Visit Visit { get; set; }
         public BillsFlag Flag { get; set; }
+        public Department Department { get; set; }
         public double Amount { get; set; }
         public double Paid { get; set; }
         public double Waiver { get; set; }
@@ -32,6 +34,7 @@ namespace AfyaHMIS.Models.Finances
             Id = 0;
             Visit = new Visit();
             Flag = new BillsFlag();
+            Department = new Department();
             Amount = 0;
             Paid = 0;
             Waiver = 0;

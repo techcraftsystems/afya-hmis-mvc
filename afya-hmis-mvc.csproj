@@ -19,5 +19,6 @@
   <ItemGroup>
     <Folder Include="Views\Account\" />
     <Folder Include="Views\Registration\" />
+    <Folder Include="Models\Administrations\" />
   </ItemGroup>
 </Project>

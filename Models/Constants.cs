@@ -8,6 +8,10 @@
         //ROOMS
         public const long ROOM_TRIAGE = 1;
 
+        //DEPTS
+        public const long DEPT_REGISTRATION = 1;
+
+
         //VISIT
         public const long VISIT_FACILITY = 1;
 

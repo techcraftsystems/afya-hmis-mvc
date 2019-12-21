@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Security.Claims;
 using AfyaHMIS.Models;
+using AfyaHMIS.Models.Administrations;
 using AfyaHMIS.Models.Concepts;
 using AfyaHMIS.Models.Doctors;
 using AfyaHMIS.Models.Finances;
@@ -92,6 +93,14 @@ namespace AfyaHMIS.Controllers
             return View(model);
         }
 
+        [Route("/patients/{uuid}")]
+        public IActionResult PatientsView(string uuid, RegistrationPateintsViewModel model)
+        {
+            model.Patient = IPatientService.GetPatient(uuid);
+
+            return View(model);
+        }
+
         //Json Results
         public JsonResult SearchPatients(string names = "", string identifier = "", string phone = "", string age = "", string gender = "", string visit = "") {
             return Json(IPatientService.SearchPatients(names, identifier, phone, age, gender, visit));
@@ -109,7 +118,7 @@ namespace AfyaHMIS.Controllers
         //[Authorize(Roles = "Administrator, Super User, Regional Admin, Agency Admin, Facility Admin")]
         public IActionResult RegisterNewPatient() {
             DateTime dob = DateTime.Now;
-            bool isNew = true && InputModel.Patient.Id.Equals(0);
+            bool isNewPatient = true && InputModel.Patient.Id.Equals(0);
 
             try {
                 dob = DateTime.ParseExact(InputModel.DateOfBirth, "dd/MM/yyyy", CultureInfo.InvariantCulture);
@@ -127,14 +136,16 @@ namespace AfyaHMIS.Controllers
             patient.PI.AddedBy = user;
             patient.Save();
 
-            Encounter encounter = new Encounter {
-                Type = new EncounterType { Id = Constants.ENCOUNTER_REGISTRATION },
-                Patient = patient,
-                CreatedBy = user
-            };
-            encounter.Create(IPatientService);
+            if (isNewPatient) {
+                Encounter encounter = new Encounter {
+                    Type = new EncounterType { Id = Constants.ENCOUNTER_REGISTRATION },
+                    Patient = patient,
+                    CreatedBy = user
+                };
+                encounter.Create(IPatientService);
+            }
 
-            if (isNew)
+            if (isNewPatient)
                 return LocalRedirect("/registration/visit?p=" + patient.GetUuid());
             else 
                 return LocalRedirect("/patients/" + patient.GetUuid());
@@ -187,6 +198,7 @@ namespace AfyaHMIS.Controllers
 
             Bills bill = VisitModel.Bill;
             bill.Visit = visit;
+            bill.Department = new Department { Id = Constants.DEPT_REGISTRATION };
             bill.CreatedBy = user;
             bill.Save();
 
