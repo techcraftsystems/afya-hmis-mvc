@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using AfyaHMIS.Extensions;
 using AfyaHMIS.Models.Concepts;
 using AfyaHMIS.Models.Finances;
+using AfyaHMIS.Models.Patients;
+using AfyaHMIS.Models.Persons;
+using AfyaHMIS.Models.Registrations;
 using AfyaHMIS.Models.Rooms;
 
 namespace AfyaHMIS.Service
@@ -11,6 +15,8 @@ namespace AfyaHMIS.Service
     {
         public ClientCodeRates GetRoomsBillableRate(Room room, ClientCode code);
         public ClientCodeRates GetClientCodeBillableRate(ClientCode code, BillableService service);
+
+        public List<Bills> GetBillingCashierQueue(DateTime start, DateTime stop, BillsFlag flag);
 
         public Bills SaveBill(Bills bill);
         public Bills UpdateBillWaiver(Bills bill);
@@ -63,6 +69,50 @@ namespace AfyaHMIS.Service
                 };
 
             return new ClientCodeRates();
+        }
+
+        public List<Bills> GetBillingCashierQueue(DateTime start, DateTime stop, BillsFlag flag)
+        {
+            List<Bills> queue = new List<Bills>();
+            string query = "WHERE CAST(bl_date AS DATE) BETWEEN '" + start + "' AND '" + stop + "'";
+            if (flag != null)
+                query += " AND bl_flag=" + flag.Id;
+
+            SqlServerConnection conn = new SqlServerConnection();
+            SqlDataReader dr = conn.SqlServerConnect("SELECT bl_idnt, bl_amts, bl_date, bl_flag, bf_flag, pt_idnt, pt_uuid, pt_identifier, ps_idnt, ps_name, ps_gender, ps_dob FROM vBillingCashierQueue " + query + " ORDER BY bl_idnt");
+            if (dr.HasRows) {
+                while (dr.Read()) {
+                    Bills bill = new Bills {
+                        Id = Convert.ToInt64(dr[0]),
+                        Amount = Convert.ToDouble(dr[1]),
+                        Date = Convert.ToDateTime(dr[2]).ToString("dd/MM/yyyy"),
+                        CreatedOn = Convert.ToDateTime(dr[2]),
+                        Flag = new BillsFlag { 
+                            Id = Convert.ToInt64(dr[3]),
+                            Name = dr[4].ToString(),
+                        },
+                        Visit = new Visit {
+                            Patient = new Patient {
+                                Id = Convert.ToInt64(dr[5]),
+                                Uuid = dr[6].ToString(),
+                                Identifier = dr[7].ToString(),
+                                Person = new Person {
+                                    Id = Convert.ToInt64(dr[8]),
+                                    Name = dr[9].ToString(),
+                                    Gender = dr[10].ToString(),
+                                    DateOfBirth = Convert.ToDateTime(dr[11])
+                                }
+                            }
+                        }
+                    };
+
+                    bill.Visit.Patient.GetAge();
+
+                    queue.Add(bill);
+                }
+            }
+
+            return queue;
         }
 
         public Bills SaveBill(Bills bill)

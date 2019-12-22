@@ -2,3 +2,159 @@
 @{
     ViewData["Title"] = "Cashier";
 }
+
+<script src="~/vendors/js/tables/datatable/pdfmake.min.js"></script>
+<script src="~/vendors/js/tables/datatable/vfs_fonts.js"></script>
+<script src="~/vendors/js/tables/datatable/datatables.min.js"></script>
+<script src="~/vendors/js/tables/datatable/datatables.buttons.min.js"></script>
+<script src="~/vendors/js/tables/datatable/buttons.html5.min.js"></script>
+<script src="~/vendors/js/tables/datatable/buttons.print.min.js"></script>
+<script src="~/vendors/js/tables/datatable/buttons.bootstrap.min.js"></script>
+<script src="~/vendors/js/tables/datatable/datatables.bootstrap4.min.js"></script>
+
+<script src="~/vendors/js/pickers/pickadate/picker.js"></script>
+<script src="~/vendors/js/pickers/pickadate/picker.date.js"></script>
+<script src="~/vendors/js/pickers/pickadate/legacy.js"></script>
+
+<script src="~/js/billing-cashier.js"></script>
+
+<link rel="stylesheet" type="text/css" href="~/vendors/css/pickers/pickadate/pickadate.css">
+<link rel="stylesheet" type="text/css" href="~/vendors/css/tables/datatable/datatables.min.css">
+<style>
+    div.search-list div.fields {
+        padding: 0 7px;
+    }
+    .card .card-header {
+        padding-bottom: 0px!important;
+    }
+    div.dataTables_length,
+    div.dataTables_filter {
+        display: none;
+    }
+    .picker {
+        width: 150%;
+        margin-top: -15px;
+        text-align: left;
+        position: absolute;
+        top: 100%;
+        z-index: 990;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+</style>
+
+<div class="content-body">
+    <section class="users-list-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Billing Cashier</h4>
+                <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+                <div class="heading-elements">
+                    <ul class="list-inline mb-0">
+                        <li><a data-action="collapse"><i class="feather icon-chevron-down"></i></a></li>
+                        <li><a data-action=""><i class="feather icon-rotate-cw get-queue pointer"></i></a></li>
+                        <li><a data-action=""><i class="feather icon-x"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-content collapse show">
+                <div class="card-body" style="padding-top:5px;padding-bottom:0px;">
+                    <div class="users-list-filter">
+                        <form id="search-form" autocomplete = "off">
+                            <div class="row search-list">
+                                <div class="fields col-12 col-sm-6 col-lg-2">
+                                    <fieldset class="form-group has-icon-left">
+                                        <label for="users-list-role">Start Date</label>
+                                        <input type="text" class="form-control pickadate" id="queue-start" placeholder="DD/MM/YYYY" value="@(Model.Date)" />
+                                        <div class="form-control-position">
+                                            <i class="feather icon-calendar"></i>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div class="fields col-12 col-sm-6 col-lg-2">
+                                    <fieldset class="form-group has-icon-left">
+                                        <label for="users-list-status">End Date</label>
+                                        <input type="text" class="form-control pickadate" id="queue-stop" placeholder="DD/MM/YYYY" value="@(Model.Date)" />
+                                        <div class="form-control-position">
+                                            <i class="feather icon-calendar"></i>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div class="fields col-12 col-sm-6 col-lg-2">
+                                    <fieldset class="form-group has-icon-left">
+                                        <label for="users-list-status">Status</label>
+                                        <select class="form-control pickadata" id="queue-flag">
+                                            <option value="">All Bills</option>
+                                            <option value="0" selected>Pending</option>
+                                            <option value="1">Processed</option>
+                                            <option value="99">Cancelled</option>
+                                        </select>
+                                        <div class="form-control-position">
+                                            <i class="feather icon-clock"></i>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div class="fields col-12 col-sm-6">
+                                    <fieldset class="form-group has-icon-left">
+                                        <label for="users-list-status">Filter</label>
+                                        <input type="text" class="form-control" id="queue-filter" placeholder="Filter" />
+                                        <div class="form-control-position">
+                                            <i class="feather icon-search"></i>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="top-side-up">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="card-body card-dashboard" style="padding-top:10px">
+                            <div class="table-responsive">
+                                <table id="billing-queue-table" class="table zero-configuration">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>DATE</th>
+                                            <th>IDENTIFIER</th>
+                                            <th>NAMES</th>
+                                            <th>AGE</th>
+                                            <th>GENDER</th>
+                                            <th>STATUS</th>
+                                            <th>AMOUNT</th>
+                                            <th>ACTION</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var bill in Model.Bills) {
+                                            <tr>
+                                                <td>@bill.Id</td>
+                                                <td>@bill.Date</td>
+                                                <td>@bill.Visit.Patient.Identifier</td>
+                                                <td><a href="/patients/@(bill.Visit.Patient.Uuid)">@bill.Visit.Patient.Person.Name</a></td>
+                                                <td>@bill.Visit.Patient.Age</td>
+                                                <td>@bill.Visit.Patient.Person.Gender</td>
+                                                <td>@bill.Flag.Name</td>
+                                                <td>@string.Format("{0:N}", bill.Amount)</td>
+                                                <td>&nbsp; <a href="/billing/bill?p=@(bill.Visit.Patient.Uuid)&date=@(bill.Date)"><i class="feather icon-airplay td-action"></i></a> <a class="pointer redirect-link" data-uuid="@(bill.Visit.Patient.Uuid)" data-date="@(bill.Date)"> <i class="feather icon-x danger td-action"></i></a></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

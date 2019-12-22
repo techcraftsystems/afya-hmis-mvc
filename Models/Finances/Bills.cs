@@ -10,6 +10,7 @@ namespace AfyaHMIS.Models.Finances
         public static IFinanceService IFinanceService = new FinanceService();
 
         public long Id { get; set; }
+        public string Date { get; set; }
         public Visit Visit { get; set; }
         public BillsFlag Flag { get; set; }
         public Department Department { get; set; }
@@ -32,6 +33,7 @@ namespace AfyaHMIS.Models.Finances
         public Bills()
         {
             Id = 0;
+            Date = DateTime.Now.ToString("dd/MM/yyyy");
             Visit = new Visit();
             Flag = new BillsFlag();
             Department = new Department();
