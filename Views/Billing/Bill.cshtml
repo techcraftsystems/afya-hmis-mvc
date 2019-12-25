@@ -1,0 +1,412 @@
+﻿@model AfyaHMIS.ViewModel.BillingBillViewModel;
+@{
+    ViewData["Title"] = "View Bills";
+}
+
+<script src="~/vendors/js/forms/select/select2.full.min.js"></script>
+<script src="~/js/scripts/pages/app-ecommerce-shop.js"></script>
+<script src="~/js/billing-bill.js"></script>
+<script>
+    var date = "@(Model.Date.ToString("dd/MM/yyyy"))";
+    var bill = "";
+    var uuid = "@(Model.Patient.Uuid)";
+</script>
+
+<link rel="stylesheet" type="text/css" href="~/vendors/css/forms/select/select2.min.css">
+<link rel="stylesheet" type="text/css" href="~/css/pages/app-ecommerce-shop.css">
+<style>
+    .modal-text-bold {
+        color: #626262;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    .modal-text-title {
+        display: inline-block;
+        width:90px;
+    }
+    em.small {
+        font-size: 0.7em;
+    }
+</style>
+
+<div class="content-detached content-right">
+    <div class="content-body">
+        <section id="ecommerce-header">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="ecommerce-header-items">
+                        <div class="result-toggler">
+                            <button class="navbar-toggler shop-sidebar-toggler" type="button" data-toggle="collapse">
+                                <span class="navbar-toggler-icon d-block d-lg-none"><i class="feather icon-menu"></i></span>
+                            </button>
+                            <div class="search-results">
+                                @string.Format("{0:N0}", Model.Pending.Count) bill@(Model.Pending.Count == 1 ? "" : "s") found
+                            </div>
+                        </div>
+                        <div class="view-options">
+                            <select class="price-options form-control" id="ecommerce-price-options">
+                                <option value="0" selected>Pending Bills</option>
+                                <option value="1">Cleared Bills</option>
+                                <option value="99">Cancelled Bills</option>
+                            </select>
+                            <div class="view-btn-option">
+                                <button class="btn btn-white view-btn grid-view-btn active">
+                                    <i class="feather icon-grid"></i>
+                                </button>
+                                <button class="btn btn-white list-view-btn view-btn">
+                                    <i class="feather icon-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="shop-content-overlay"></div>
+
+        <section id="ecommerce-searchbar">
+            <div class="row mt-1">
+                <div class="col-sm-12">
+                    <fieldset class="form-group position-relative">
+                        <input type="text" class="form-control search-product" id="iconLeft5" placeholder="Search here">
+                        <div class="form-control-position">
+                            <i class="feather icon-search"></i>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </section>
+
+        <section class="">
+            <div class="card">
+                <div class="card-content">
+                    <table id="pending-bill-table" class="table table-hover-animation mb-0">
+                        <thead>
+                            <tr>
+                                <th width="1" scope="col" class="pl-2">
+                                    <span class="vs-checkbox-con vs-checkbox-primary">
+                                        <input class="th-check-all" type="checkbox">
+                                        <span class="vs-checkbox">
+                                            <span class="vs-checkbox--check">
+                                                <i class="vs-icon feather icon-check"></i>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </th>
+                                <th scope="col">DATE</th>
+                                <th scope="col">INVOICE</th>
+                                <th scope="col">BILL</th>
+                                <th scope="col">PATIENT</th>
+                                <th scope="col">DEPARTMENT</th>
+                                <th scope="col" class="text-right">AMOUNT</th>
+                                <th scope="col" class="text-center">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var bill in Model.Pending)
+                            {
+                                <tr>
+                                    <td width="1" scope="row" class="pl-2">
+                                        <span class="vs-checkbox-con vs-checkbox-primary">
+                                            <input id="check-@(bill.Id)" type="checkbox">
+                                            <span class="vs-checkbox">
+                                                <span class="vs-checkbox--check">
+                                                    <i class="vs-icon feather icon-check"></i>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </td>
+                                    <td>@bill.Date</td>
+                                    <td>N/A</td>
+                                    <td>@bill.Id</td>
+                                    <td><a href="/patients/@bill.Visit.Patient.Uuid">@bill.Visit.Patient.Person.Name</a></td>
+                                    <td>@bill.Department.Name</td>
+                                    <td class="text-right">@string.Format("{0:N2}", bill.Balance)</td>
+                                    <td class="text-center">
+                                        <a class="pointer bill-opts" data-idnt="@(bill.Id)" data-code="@(bill.Visit.ClientCode.Name.ToUpper())"> <i class="feather icon-server primary td-action" ></i> </a>
+                                        <a class="pointer bill-canc" data-idnt="@(bill.Id)"> <i class="feather icon-trash-2 danger td-action"></i> </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th width="1" scope="row" class="pl-2">
+                                    <span class="vs-checkbox-con vs-checkbox-primary">
+                                        <input class="tf-check-summary" type="checkbox" disabled>
+                                        <span class="vs-checkbox">
+                                            <span class="vs-checkbox--check">
+                                                <i class="vs-icon feather icon-check"></i>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </th>
+                                <th colspan="5">BILLING SELECTION SUMMARY</th>
+                                <th class="text-right summary-field">0.00</th>
+                                <th class="text-center"><button class="btn btn-process btn-outline-primary" style="padding:8px 20px;"><i class="feather icon-airplay"></i> GO</button></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        @if (!Model.Completed.Count.Equals(0))
+        {
+            int count = 0;
+
+            <section class="">
+                <div class="card">
+                    <div class="card-content">
+                        <table id="completed-bill-table" class="table table-hover-animation mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="1" class="pl-2">#</th>
+                                    <th scope="col">DATE</th>
+                                    <th scope="col">BILL</th>
+                                    <th scope="col">PATIENT</th>
+                                    <th scope="col">DEPARTMENT</th>
+                                    <th scope="col">STATUS</th>
+                                    <th scope="col" class="text-right">AMOUNT</th>
+                                    <th scope="col" class="text-center">ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var bill in Model.Completed)
+                                {
+                                    count++;
+
+                                    <tr>
+                                        <td width="1" scope="row" class="pl-2">@count</td>
+                                        <td>@bill.Date</td>
+                                        <td>@bill.Id</td>
+                                        <td><a href="/patients/@bill.Visit.Patient.Uuid">@bill.Visit.Patient.Person.Name</a></td>
+                                        <td>@bill.Department.Name</td>
+                                        <td>
+                                            <span class="badge badge-@(bill.Flag.Id == 1 ? "dark" : "danger")"><span class="">@bill.Flag.Name</span></span>
+                                        
+                                        </td>
+                                        <td class="text-right">@string.Format("{0:N2}", bill.Balance)</td>
+                                        <td class="text-center">
+                                            <a class="pointer bill-view" data-idnt="@(bill.Id)" data-code="@(bill.Visit.ClientCode.Name.ToUpper())"> <i class="feather icon-server primary td-action" ></i> </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        }
+    </div>
+</div>
+
+<div class="sidebar-detached sidebar-left">
+    <div class="sidebar">
+        <div class="sidebar-shop" id="ecommerce-sidebar-toggler">
+            <div class="row">
+                <div class="col-sm-12">
+                    <h6 class="filter-heading d-none d-lg-block">@(Model.Patient.Person.Name)</h6>
+                </div>
+            </div>
+            <span class="sidebar-close-icon d-block d-md-none">
+                <i class="feather icon-x"></i>
+            </span>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="multi-range-price">
+                    <div class="multi-range-title pb-75">
+                        <h6 class="filter-title mb-0">Invoices to Process</h6>
+                    </div>
+                    <ul class="list-unstyled price-range" id="price-range">
+                        <li>
+                            <span class="vs-radio-con vs-radio-primary py-25">
+                                <input type="radio" name="price-range" checked value="false">
+                                <span class="vs-radio">
+                                    <span class="vs-radio--border"></span>
+                                    <span class="vs-radio--circle"></span>
+                                </span>
+                                <span class="ml-50">Invoice Selection</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="vs-radio-con vs-radio-primary py-25">
+                                <input type="radio" name="price-range" value="false">
+                                <span class="vs-radio">
+                                    <span class="vs-radio--border"></span>
+                                    <span class="vs-radio--circle"></span>
+                                </span>
+                                <span class="ml-50">Invoice Pending</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="vs-radio-con vs-radio-primary py-25">
+                                <input type="radio" name="price-range" value="false">
+                                <span class="vs-radio">
+                                    <span class="vs-radio--border"></span>
+                                    <span class="vs-radio--circle"></span>
+                                </span>
+                                <span class="ml-50">Invoice Customize</span>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                <hr>
+                <div class="brands">
+                    <div class="brand-title mt-1 pb-1">
+                        <h6 class="filter-title mb-0">Departments</h6>
+                    </div>
+                    <div class="brand-list" id="brands">
+                        <ul class="list-unstyled">
+                            @foreach (var dept in Model.Departments)
+                            {
+                                <li class="d-flex justify-content-between align-items-center py-25">
+                                    <span class="vs-checkbox-con vs-checkbox-primary">
+                                        <input id="dept-@dept.Department.Id" type="checkbox" @(dept.Count == 0 ? "" : "checked")>
+                                        <span class="vs-checkbox">
+                                            <span class="vs-checkbox--check">
+                                                <i class="vs-icon feather icon-check"></i>
+                                            </span>
+                                        </span>
+                                        <span class="">@dept.Department.Name</span>
+                                    </span>
+                                    <span>@string.Format("{0:N2}", dept.Total)</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <hr />
+                <div id="clear-filters">
+                    <button class="btn btn-block btn-primary">CLEAR ALL FILTERS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="bill-details-modal" tabindex="-1" role="dialog" aria-labelledby="bill-details-modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalScrollableTitle">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <span class="modal-text-title">PATIENT: </span><span class="modal-text-bold">@(Model.Patient.Person.Name)</span> <em class="small"> @(Model.Patient.Person.Gender == "m" ? "Male" : (Model.Patient.Person.Gender == "f" ? "Female" : "Others"))/@(Model.Patient.Age)</em>
+                </div>
+                <div>
+                    <span class="modal-text-title">DATED: </span><span class="modal-text-bold">@(Model.Date.ToString("dd MMMM, yyyy"))</span>
+                </div>
+                <div>
+                    <span class="modal-text-title">CL-CODE: </span><span class="modal-text-bold modal-client-code">CASH/WALKIN</span>
+                </div>
+
+                <table id="bill-details-modal-table" class="table mt-1">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width:1px">#</th>
+                            <th scope="col">DESCRIPTION</th>
+                            <th scope="col" class="text-right">PRICE</th>
+                            <th scope="col" class="text-right">QNTY</th>
+                            <th scope="col" class="text-right">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>CONSULTATION FEES</td>
+                            <td class="text-right">0.00</td>
+                            <td class="text-right">0.00</td>
+                            <td class="text-right">0.00</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>&nbsp;</th>
+                            <th colspan="3">BILL SUMMARY</th>
+                            <th class="tf-summary text-right">0.00</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="bill-cancel-modal" tabindex="-1" role="dialog" aria-labelledby="bill-details-modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger white">
+                <h5 class="modal-title" id="exampleModalScrollableTitle">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <span class="modal-text-title">PATIENT: </span><span class="modal-text-bold">@(Model.Patient.Person.Name)</span> <em class="small"> @(Model.Patient.Person.Gender == "m" ? "Male" : (Model.Patient.Person.Gender == "f" ? "Female" : "Others"))/@(Model.Patient.Age)</em>
+                </div>
+                <div>
+                    <span class="modal-text-title">DATED: </span><span class="modal-text-bold">@(Model.Date.ToString("dd MMMM, yyyy"))</span>
+                </div>
+                <div>
+                    <span class="modal-text-title">CL-CODE: </span><span class="modal-text-bold modal-client-code">CASH/WALKIN</span>
+                </div>
+
+                <table id="bill-cancel-modal-table" class="table mt-1">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width:1px">&nbsp;</th>
+                            <th scope="col">DESCRIPTION</th>
+                            <th scope="col" class="text-right">PRICE</th>
+                            <th scope="col" class="text-right">QNTY</th>
+                            <th scope="col" class="text-right">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td>CONSULTATION FEES</td>
+                            <td class="text-right">0.00</td>
+                            <td class="text-right">0.00</td>
+                            <td class="text-right">0.00</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td></td>
+                            <td colspan="4">
+                                <fieldset class="col-12 p-0 m-0 form-group has-icon-left">
+                                    <label for="Patient_Person_Address_Email">Cancellation Reason</label>
+                                    <textarea id="" class="form-control bill-cancel-notes" placeholder = "Cancellation Reason"></textarea>
+                                    <div class="form-control-position" style="top:25px">
+                                        <i class="feather icon-list"></i>
+                                    </div>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger btn-void-items waves-effect waves-light">VOID BILL</button>
+            </div>
+        </div>
+    </div>
+</div>

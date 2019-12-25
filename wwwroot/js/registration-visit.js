@@ -121,7 +121,7 @@ function GetClientCodeBillableRate(room, code) {
         },
         complete: function(){
             jq('#Bill_Amount').val(amounts.toString().toAccounting());
-            jq('#Item_Amount').val(amounts);
+            jq('#Item_Price').val(amounts);
             jq('#Item_Service_Id').val(service);
         }
     }); 

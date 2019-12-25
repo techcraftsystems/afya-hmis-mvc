@@ -17,6 +17,7 @@ namespace AfyaHMIS.Models.Finances
         public double Amount { get; set; }
         public double Paid { get; set; }
         public double Waiver { get; set; }
+        public double Balance { get; set; }
         public string WaiverReason { get; set; }
 
         public DateTime CreatedOn { get; set; }
@@ -30,8 +31,7 @@ namespace AfyaHMIS.Models.Finances
         public Users WaivedApprovedBy { get; set; }
         public string Notes { get; set; }
 
-        public Bills()
-        {
+        public Bills() {
             Id = 0;
             Date = DateTime.Now.ToString("dd/MM/yyyy");
             Visit = new Visit();
@@ -40,6 +40,7 @@ namespace AfyaHMIS.Models.Finances
             Amount = 0;
             Paid = 0;
             Waiver = 0;
+            Balance = 0;
             WaiverReason = "";
 
             CreatedOn = DateTime.Now;
@@ -49,6 +50,10 @@ namespace AfyaHMIS.Models.Finances
             ProcessedBy = new Users();
             WaivedApprovedBy = new Users();
             Notes = "";
+        }
+
+        public bool IsProcessed() {
+            return IFinanceService.GetBillProcessingStatus(this);
         }
 
         public Bills Save() {
@@ -61,6 +66,10 @@ namespace AfyaHMIS.Models.Finances
 
         public Bills UpdateProcess() {
             return IFinanceService.UpdateBillProcess(this);
+        }
+
+        public Bills SetAutoFlag() {
+            return IFinanceService.UpdateBillsAutoFlag(this);
         }
     }
 }

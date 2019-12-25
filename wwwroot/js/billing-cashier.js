@@ -1,14 +1,14 @@
-﻿jq(function() {
-    String.prototype.toAccounting = function() {
-        var str = parseFloat(this).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
-        if (str.charAt(0) == '-') {
-            return '(' + str.substring(1, 40) + ')';
-        }
-        else {
-            return str;
-        }
-    };
+﻿String.prototype.toAccounting = function() {
+    var str = parseFloat(this).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    if (str.charAt(0) == '-') {
+        return '(' + str.substring(1, 40) + ')';
+    }
+    else {
+        return str;
+    }
+};
 
+jq(function() {
     jq('.pickadate').pickadate({
         format: 'dd/mm/yyyy'
     });
