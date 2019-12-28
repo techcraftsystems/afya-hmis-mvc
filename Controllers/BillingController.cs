@@ -114,6 +114,7 @@ namespace AfyaHMIS.Controllers
             Users user = new Users { Id = long.Parse(HttpContext.User.FindFirst(ClaimTypes.Actor).Value) };
             Invoice invoice = BillingModel.Invoice;
             invoice.CreatedBy = user;
+            invoice.Flag = new BillingFlag { Id = Constants.FLAG_PROCESS };
             invoice.Save();
 
             foreach (var itd in BillingModel.Items) {

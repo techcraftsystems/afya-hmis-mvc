@@ -235,6 +235,8 @@ namespace AfyaHMIS.Controllers
                     Notes = "Waivered Item"
                 };
                 details.Save();
+
+                //Invoice Payment
             }
 
             Queues queue = VisitModel.Queue;

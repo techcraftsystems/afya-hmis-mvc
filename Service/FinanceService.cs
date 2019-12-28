@@ -421,7 +421,7 @@ namespace AfyaHMIS.Service
 
         public Invoice SaveInvoice(Invoice invoice) {
             SqlServerConnection conn = new SqlServerConnection();
-            invoice.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + invoice.Id + ", @flag INT=" + invoice.Flag.Id + ", @user INT=" + invoice.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + invoice.Notes + "'; IF NOT EXISTS (SELECT inv_idnt FROM Invoice WHERE inv_idnt=@idnt) BEGIN INSERT INTO Invoice (inv_flag, inv_created_by, inv_notes) output INSERTED.inv_idnt VALUES (@flag, @user, @notes) END ELSE BEGIN UPDATE Invoice SET inv_notes=@notes output INSERTED.inv_idnt WHERE inv_idnt=@idnt END");
+            invoice.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + invoice.Id + ", @patient INT=" + invoice.Patient.Id + ", @flag INT=" + invoice.Flag.Id + ", @user INT=" + invoice.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + invoice.Notes + "'; IF NOT EXISTS (SELECT inv_idnt FROM Invoice WHERE inv_idnt=@idnt) BEGIN INSERT INTO Invoice (inv_flag, inv_patient, inv_created_by, inv_notes) output INSERTED.inv_idnt VALUES (@flag, @patient, @user, @notes) END ELSE BEGIN UPDATE Invoice SET inv_notes=@notes output INSERTED.inv_idnt WHERE inv_idnt=@idnt END");
 
             return invoice;
         }
