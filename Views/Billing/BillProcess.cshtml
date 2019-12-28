@@ -1,5 +1,199 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model AfyaHMIS.ViewModel.BillingBillViewModel;
 @{
+    ViewData["Title"] = "Process Bills";
 }
+
+<script src="~/js/billing-bill-process.js"></script>
+
+
+<link rel="stylesheet" type="text/css" href="~/css/pages/app-ecommerce-shop.css">
+<style>
+    div.invoice-header{
+        border-top: 1px solid #f8f8f8;
+    }
+
+    div.invoice-header > div > div > span {
+        display: inline-block;
+        width: 100px;
+        font-weight: 800;
+    }
+</style>
+
+<div class="content-detached content-left">
+    <div class="content-body">
+        <div class="shop-content-overlay"></div>
+
+        <section id="ecommerce-searchbar">
+            <div class="row mt-0">
+                <div class="col-sm-12">
+                    <fieldset class="form-group position-relative">
+                        <input type="text" class="form-control search-product pl-2" id="iconLeft5" placeholder="Filter Bills Items">
+                        <div class="form-control-position">
+                            <i class="feather icon-search"></i>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </section>
+
+        <section class="">
+            <div class="card">
+                <div class="card-body">
+                    <div id="invoice-company-details" class="row">
+                        <div class="col-sm-6 col-12 text-left pt-0">
+                            <div class="media pt-0">
+                                <img src="~/images/logo/logo-full.jpg"  width="200" alt="company logo">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-12 text-right pt-0">
+                            <div class="invoice-details">
+                                <h6>MEDIFORTE HOSPITAL KISII</h6>
+                                <h6>P.O. BOX 12384 - 00600,<br/>KISII, KENYA.</h6>
+                            </div>
+                            <h1 class="mb-0">Invoice</h1>
+                        </div>
+
+                        <div class="mt-1 pt-1 pr-0 col-12 row invoice-header">
+                            <div class="col-12 col-sm-6 col-lg-4">
+                                <div><span>PATIENT ID: </span> @(Model.Patient.Identifier)</div>
+                                <div><span>NAMES: </span> @(Model.Patient.Person.Name)</div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-4 text-center">
+                                <div><span>GENDER: </span> @(Model.Patient.Person.Gender == "m" ? "MALE" : (Model.Patient.Person.Gender == "f" ? "FEMALE" : "OTHERS"))</div>
+                                <div><span>PT AGE : </span> @(Model.Patient.Age)</div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-4 text-right pr-0">
+                                <div><span>INVOICE NO: </span> 33/3434</div>
+                                <div><span>INV DATE : </span> @DateTime.Now.ToString("dd/MM/yyyy")</div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-4">
+                                <div><span>CLIENT-CL: </span> 33/3434</div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-8 pr-0 text-right">
+                                <div>john.ndiamo@gmail.com</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @using (Html.BeginForm("CreateInvoice", "Billing", FormMethod.Post, new { @class="card-content invoice-form", autocomplete = "off" }))
+                {
+                    <table id="invoice-bill-table" class="table table-hover-animation mb-0">
+                        <thead>
+                            <tr>
+                                <th width="1" scope="col" class="pl-2">
+                                    <span class="vs-checkbox-con vs-checkbox-primary">
+                                        <input class="th-check-all" type="checkbox" checked>
+                                        <span class="vs-checkbox">
+                                            <span class="vs-checkbox--check">
+                                                <i class="vs-icon feather icon-check"></i>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </th>
+                                <th scope="col">CODE</th>
+                                <th scope="col">DESCRIPTION</th>
+                                <th scope="col">BILL</th>
+                                <th scope="col" class="text-right">PRICE</th>
+                                <th scope="col" class="text-right">QTY</th>
+                                <th scope="col" class="text-right">AMOUNT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int ix = 0; ix < Model.Items.Count; ix++) 
+                            {
+                                <tr>
+                                    <td width="1" scope="row" class="pl-2">
+                                        <span class="vs-checkbox-con vs-checkbox-primary">
+                                            @Html.CheckBoxFor(model => Model.Items[ix].Checked, new { @class = "check-line"} )
+                                            <span class="vs-checkbox">
+                                                <span class="vs-checkbox--check">
+                                                    <i class="vs-icon feather icon-check"></i>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </td>
+                                    <td>@Model.Items[ix].Item.Service.Code</td>
+                                    <td>@Model.Items[ix].Item.Service.Name</td>
+                                    <td>
+                                        @Model.Items[ix].Item.Bill.Id
+                                        @Html.HiddenFor(model => Model.Items[ix].Item.Id)
+                                        @Html.HiddenFor(model => Model.Items[ix].Item.Bill.Id)
+                                    </td>
+                                    <td class="text-right">@string.Format("{0:N2}", Model.Items[ix].Item.Price)</td>
+                                    <td class="text-right">@string.Format("{0:N2}", Model.Items[ix].Item.Quantity)</td>
+                                    <td class="text-right">@string.Format("{0:N2}", (Model.Items[ix].Item.Price * Model.Items[ix].Item.Quantity))</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th width="1" scope="row" class="pl-2">
+                                    <span class="vs-checkbox-con vs-checkbox-primary">
+                                        <input class="tf-check-summary" type="checkbox" disabled>
+                                        <span class="vs-checkbox">
+                                            <span class="vs-checkbox--check">
+                                                <i class="vs-icon feather icon-check"></i>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </th>
+                                <th colspan="4">INVOICE SUMMARY</th>
+                                <th class="text-right count-field">0.00</th>
+                                <th class="text-right summs-field">0.00</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="text-right m-1 mb-3">
+                        <button class="btn btn-save btn-outline-primary pointer"><i class="feather icon-save"></i> SAVE</button>
+                    </div>
+
+                    @Html.HiddenFor(model => Model.Invoice.Patient.Id)
+                    @Html.HiddenFor(model => Model.Invoice.Patient.Uuid)
+                }
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="sidebar-detached sidebar-right">
+    <div class="sidebar">
+        <div class="card col-sm-12" style="width:260px">
+            <div class="card-body">
+                <div class="multi-range-price">
+                    <div class="multi-range-title pb-75">
+                        <h6 class="filter-title mb-0">Invoices Actions</h6>
+                    </div>
+                    <ul class="list-unstyled price-range" id="price-range">
+                        <li>
+                            <span class="vs-radio-con vs-radio-primary py-25">
+                                <input type="radio" name="price-range" checked value="false">
+                                <span class="vs-radio">
+                                    <span class="vs-radio--border"></span>
+                                    <span class="vs-radio--circle"></span>
+                                </span>
+                                <span class="ml-50">Check All</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="vs-radio-con vs-radio-primary py-25">
+                                <input type="radio" name="price-range" value="false">
+                                <span class="vs-radio">
+                                    <span class="vs-radio--border"></span>
+                                    <span class="vs-radio--circle"></span>
+                                </span>
+                                <span class="ml-50">Uncheck All</span>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                <hr />
+                <div id="clear-filters">
+                    <button class="btn btn-block btn-primary">INVOICE ALL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

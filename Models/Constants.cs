@@ -11,6 +11,10 @@
         //DEPTS
         public const long DEPT_REGISTRATION = 1;
 
+        //BILLING FLAGS
+        public const long FLAG_PROCESS = 1;
+        public const long FLAG_CLEARED = 2;
+        public const long FLAG_CANCELLED = 99;
 
         //VISIT
         public const long VISIT_FACILITY = 1;

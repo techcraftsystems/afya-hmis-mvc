@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using AfyaHMIS.Extensions;
 using AfyaHMIS.Models;
@@ -19,11 +18,14 @@ namespace AfyaHMIS.Service
         public ClientCodeRates GetRoomsBillableRate(Room room, ClientCode code);
         public ClientCodeRates GetClientCodeBillableRate(ClientCode code, BillableService service);
 
-        public List<Bills> GetBills(Patient patient, Visit visit, DateTime? start, DateTime? stop, BillsFlag flag, bool otherFlags = false);
-        public List<Bills> GetBillingCashierQueue(DateTime start, DateTime stop, BillsFlag flag);
+        public List<Bills> GetBills(Patient patient, Visit visit, DateTime? start, DateTime? stop, BillingFlag flag, bool otherFlags = false);
+        public List<Bills> GetBillingCashierQueue(DateTime start, DateTime stop, BillingFlag flag);
 
-        public List<BillsItem> GetBillsItems(Bills bill, bool ignoreVoid, bool ignoreProcessed);
-        public List<BillsDepartment> GetBillsDepartments(Patient patient, BillsFlag flag);
+        public List<BillsItem> GetBillsItems(string bills);
+        public List<BillsItem> GetBillsItems(Bills bill, bool ignoreVoid, bool ignoreProcessed, string conditions = "");
+        public List<BillsDepartment> GetBillsDepartments(Patient patient, BillingFlag flag);
+
+        public List<Invoice> GetInvoices(Patient patient);
 
         public bool GetBillProcessingStatus(Bills bill);
 
@@ -34,6 +36,10 @@ namespace AfyaHMIS.Service
 
         public BillsItem SaveBillsItem(BillsItem item);
         public BillsItem VoidBillsItem(BillsItem item);
+
+        public Invoice SaveInvoice(Invoice invoice);
+        public InvoiceDetails SaveInvoiceDetails(InvoiceDetails details);
+        public void RemoveInvoiceDetail(InvoiceDetails dtls);
     }
 
 	public class FinanceService : IFinanceService 
@@ -81,7 +87,7 @@ namespace AfyaHMIS.Service
             return new ClientCodeRates();
         }
 
-        public List<Bills> GetBills(Patient patient, Visit visit, DateTime? start, DateTime? stop, BillsFlag flag, bool otherFlags = false)
+        public List<Bills> GetBills(Patient patient, Visit visit, DateTime? start, DateTime? stop, BillingFlag flag, bool otherFlags = false)
         {
             List<Bills> bills = new List<Bills>();
             string query = "";
@@ -115,7 +121,7 @@ namespace AfyaHMIS.Service
                         ProcessedOn = dr[6].ToString() == "" ? (DateTime?)null : Convert.ToDateTime(dr[6]),
                         WaivedOn = dr[7].ToString() == "" ? (DateTime?)null : Convert.ToDateTime(dr[7]),
                         Notes = dr[8].ToString(),
-                        Flag = new BillsFlag {
+                        Flag = new BillingFlag {
                             Id = Convert.ToInt64(dr[9]),
                             Name = dr[10].ToString()
                         },
@@ -172,7 +178,7 @@ namespace AfyaHMIS.Service
             return bills;
         }
 
-        public List<Bills> GetBillingCashierQueue(DateTime start, DateTime stop, BillsFlag flag)
+        public List<Bills> GetBillingCashierQueue(DateTime start, DateTime stop, BillingFlag flag)
         {
             List<Bills> queue = new List<Bills>();
             string query = "WHERE CAST(bl_date AS DATE) BETWEEN '" + start + "' AND '" + stop + "'";
@@ -188,7 +194,7 @@ namespace AfyaHMIS.Service
                         Amount = Convert.ToDouble(dr[1]),
                         Date = Convert.ToDateTime(dr[2]).ToString("dd/MM/yyyy"),
                         CreatedOn = Convert.ToDateTime(dr[2]),
-                        Flag = new BillsFlag { 
+                        Flag = new BillingFlag { 
                             Id = Convert.ToInt64(dr[3]),
                             Name = dr[4].ToString(),
                         },
@@ -216,22 +222,29 @@ namespace AfyaHMIS.Service
             return queue;
         }
 
-        public List<BillsItem> GetBillsItems(Bills bill, bool ignoreVoid, bool ignoreProcessed) {
+        public List<BillsItem> GetBillsItems(string bills) {
+            return GetBillsItems(null, true, true, "bi_bill IN (" + bills + ")");
+        }
+
+        public List<BillsItem> GetBillsItems(Bills bill, bool ignoreVoid, bool ignoreProcessed, string conditions = "") {
             List<BillsItem> items = new List<BillsItem>();
 
-            string q = "WHERE bi_bill=" + bill.Id;
+            string q = "";
+            if (bill != null)
+                q = "WHERE bi_bill=" + bill.Id;
             if (ignoreVoid)
-                q += " AND bi_void=0";
+                q += (string.IsNullOrEmpty(q) ? "WHERE" : " AND") + " bi_void=0";
             if (ignoreProcessed)
-                q += " AND bi_idnt NOT IN (SELECT id_bill_item FROM InvoiceDetails)";
+                q += (string.IsNullOrEmpty(q) ? "WHERE" : " AND") + " bi_idnt NOT IN (SELECT id_bill_item FROM InvoiceDetails)";
+            if (!string.IsNullOrEmpty(conditions))
+                q += (string.IsNullOrEmpty(q) ? "WHERE" : " AND") +  " " + conditions;
             //Consider Left outer JOIN with large Data
 
             SqlServerConnection conn = new SqlServerConnection();
-            SqlDataReader dr = conn.SqlServerConnect("SELECT bi_idnt, bi_quantity, bi_amount, bi_created_on, bi_description, bi_created_by, bs_idnt, bs_service, bs_amount, bs_description, bs_concept, ct_name, bi_void, bi_void_on, bi_void_by, bi_void_reason FROM BillsItem INNER JOIN BillableService ON bi_service=bs_idnt LEFT OUTER JOIN Concept ON bs_concept=ct_idnt " + q);
+            SqlDataReader dr = conn.SqlServerConnect("SELECT bi_idnt, bi_quantity, bi_amount, bi_created_on, bi_description, bi_created_by, bs_idnt, bs_code, bs_service, bs_amount, bs_description, bs_concept, ct_name, bi_void, bi_void_on, bi_void_by, bi_void_reason, bl_idnt, bl_visit, bl_flag, bl_dept, bl_amount, bl_paid, bl_waiver, bl_waiver_reason, bl_notes FROM BillsItem INNER JOIN Bills ON bi_bill=bl_idnt INNER JOIN BillableService ON bi_service=bs_idnt LEFT OUTER JOIN Concept ON bs_concept=ct_idnt " + q);
             if (dr.HasRows) {
                 while (dr.Read()) {
                     items.Add(new BillsItem {
-                        Bill = bill,
                         Id = Convert.ToInt64(dr[0]),
                         Quantity = Convert.ToDouble(dr[1]),
                         Price = Convert.ToDouble(dr[2]),
@@ -242,18 +255,30 @@ namespace AfyaHMIS.Service
                         },
                         Service = new BillableService {
                             Id = Convert.ToInt64(dr[6]),
-                            Name = dr[7].ToString(),
-                            Amount = Convert.ToDouble(dr[8]),
-                            Description = dr[9].ToString(),
+                            Code = dr[7].ToString(),
+                            Name = dr[8].ToString(),
+                            Amount = Convert.ToDouble(dr[9]),
+                            Description = dr[10].ToString(),
                             Concept = new Concept {
-                                Id = Convert.ToInt64(dr[10]),
-                                Name = dr[11].ToString()
+                                Id = Convert.ToInt64(dr[11]),
+                                Name = dr[12].ToString()
                             }
                         },
-                        Voided = Convert.ToBoolean(dr[12]),
-                        VoidedOn = dr[13].ToString() == "" ? (DateTime?)null : Convert.ToDateTime(dr[13]),
-                        VoidedBy = new Users { Id = Convert.ToInt64(dr[14]) },
-                        VoidedReason = dr[15].ToString()
+                        Voided = Convert.ToBoolean(dr[13]),
+                        VoidedOn = dr[14].ToString() == "" ? (DateTime?)null : Convert.ToDateTime(dr[14]),
+                        VoidedBy = new Users { Id = Convert.ToInt64(dr[15]) },
+                        VoidedReason = dr[16].ToString(),
+                        Bill = new Bills {
+                            Id = Convert.ToInt64(dr[17]),
+                            Visit = new Visit { Id = Convert.ToInt64(dr[18]) },
+                            Flag = new BillingFlag { Id = Convert.ToInt64(dr[19]) },
+                            Department = new Department { Id = Convert.ToInt64(dr[20]) },
+                            Amount = Convert.ToDouble(dr[21]),
+                            Paid = Convert.ToDouble(dr[22]),
+                            Waiver = Convert.ToDouble(dr[23]),
+                            WaiverReason = dr[24].ToString(),
+                            Notes = dr[25].ToString()
+                        }
                     });
                 }
             }
@@ -261,7 +286,7 @@ namespace AfyaHMIS.Service
             return items;
         }
 
-        public List<BillsDepartment> GetBillsDepartments(Patient patient, BillsFlag flag) {
+        public List<BillsDepartment> GetBillsDepartments(Patient patient, BillingFlag flag) {
             List<BillsDepartment> depts = new List<BillsDepartment>();
             string query = "WHERE vst_patient=" + patient.Id;
             if (flag != null)
@@ -283,6 +308,63 @@ namespace AfyaHMIS.Service
             }
 
             return depts;
+        }
+
+        public List<Invoice> GetInvoices(Patient patient)
+        {
+            List<Invoice> invoices = new List<Invoice>();
+
+            string query = "";
+            if (patient != null)
+                query = "WHERE inv_patient=" + patient.Id;
+
+            SqlServerConnection conn = new SqlServerConnection();
+            SqlDataReader dr = conn.SqlServerConnect("SELECT inv_idnt, inv_created_by, inv_created_on, inv_notes, inv_amount, ISNULL(ip_tendered,0) inv_paid, bf_idnt, bf_flag, pt_idnt, pt_uuid, pt_identifier, pt_added_on, pt_added_by, pt_notes, pst_idnt, pst_status, ps_idnt, ps_name, ps_gender, ps_dob, ps_estimate, ps_added_on, ps_added_by, ps_notes FROM vInvoice INNER JOIN BillsFlag ON inv_flag=bf_idnt INNER JOIN Patient ON inv_patient=pt_idnt INNER JOIN PatientStatus ON pt_status=pst_idnt INNER JOIN Person ON pt_person=ps_idnt LEFT OUTER JOIN vInvoicePayment ON inv_idnt=ip_invoice " + query + " ORDER BY inv_created_on DESC, inv_idnt DESC");
+            if (dr.HasRows) {
+                while (dr.Read()) {
+                    Invoice invoice = new Invoice {
+                        Id = Convert.ToInt64(dr[0]),
+                        CreatedBy = new Users { Id = Convert.ToInt64(dr[1]) },
+                        CreatedOn = Convert.ToDateTime(dr[2]),
+                        Notes = dr[3].ToString(),
+                        Amount = Convert.ToDouble(dr[4]),
+                        Paid = Convert.ToDouble(dr[5]),
+                        Flag = new BillingFlag {
+                            Id = Convert.ToInt64(dr[6]),
+                            Name = dr[7].ToString()
+                        },
+                        Patient = new Patient {
+                            Id = Convert.ToInt64(dr[8]),
+                            Uuid = dr[9].ToString(),
+                            Identifier = dr[10].ToString(),
+                            AddedOn = Convert.ToDateTime(dr[11]),
+                            AddedBy = new Users { Id = Convert.ToInt64(dr[12]) },
+                            Notes = dr[13].ToString(),
+                            Status = new PatientStatus {
+                                Id = Convert.ToInt64(dr[14]),
+                                Name = dr[15].ToString(),
+                            },
+                            Person = new Person {
+                                Id = Convert.ToInt64(dr[16]),
+                                Name = dr[17].ToString(),
+                                Gender = dr[18].ToString(),
+                                DateOfBirth = Convert.ToDateTime(dr[19]),
+                                Estimate = Convert.ToBoolean(dr[20]),
+                                AddedOn = Convert.ToDateTime(dr[21]),
+                                AddedBy = new Users { Id = Convert.ToInt64(dr[22]) },
+                                Notes = dr[23].ToString()
+                            }
+                        }
+                    };
+
+                    invoice.Date = invoice.CreatedOn.ToString("dd/MM/yyyy");
+                    invoice.Balance = invoice.Amount - invoice.Paid;
+                    invoice.Patient.GetAge();
+                    invoices.Add(invoice);
+                }
+            }
+
+            return invoices;
         }
 
         public bool GetBillProcessingStatus(Bills bill) {
@@ -335,6 +417,25 @@ namespace AfyaHMIS.Service
             conn.SqlServerUpdate("DECLARE @idnt INT=" + item.Id + ", @user INT=" + item.VoidedBy.Id + ", @reason NVARCHAR(MAX)='" + item.VoidedReason + "'; UPDATE BillsItem SET bi_void=1, bi_void_on=GETDATE(), bi_void_by=@user, bi_void_reason=@reason WHERE bi_idnt=@idnt");
 
             return item;
+        }
+
+        public Invoice SaveInvoice(Invoice invoice) {
+            SqlServerConnection conn = new SqlServerConnection();
+            invoice.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + invoice.Id + ", @flag INT=" + invoice.Flag.Id + ", @user INT=" + invoice.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + invoice.Notes + "'; IF NOT EXISTS (SELECT inv_idnt FROM Invoice WHERE inv_idnt=@idnt) BEGIN INSERT INTO Invoice (inv_flag, inv_created_by, inv_notes) output INSERTED.inv_idnt VALUES (@flag, @user, @notes) END ELSE BEGIN UPDATE Invoice SET inv_notes=@notes output INSERTED.inv_idnt WHERE inv_idnt=@idnt END");
+
+            return invoice;
+        }
+
+        public InvoiceDetails SaveInvoiceDetails(InvoiceDetails dtls) {
+            SqlServerConnection conn = new SqlServerConnection();
+            dtls.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + dtls.Id + ", @invs INT=" + dtls.Invoice.Id + ", @item INT=" + dtls.Item.Id + ", @user INT=" + dtls.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + dtls.Notes + "'; IF NOT EXISTS (SELECT id_idnt FROM InvoiceDetails WHERE id_idnt=@idnt OR id_bill_item=@item) BEGIN INSERT INTO InvoiceDetails (id_invoice, id_bill_item, id_added_by, id_notes) output INSERTED.id_idnt VALUES (@invs, @item, @user, @notes) END ELSE BEGIN UPDATE InvoiceDetails SET id_notes=@notes output INSERTED.id_idnt WHERE id_idnt=@idnt END");
+
+            return dtls;
+        }
+
+        public void RemoveInvoiceDetail(InvoiceDetails dtls) {
+            SqlServerConnection conn = new SqlServerConnection();
+            conn.SqlServerUpdate("DELETE FROM InvoiceDetails WHERE id_idnt=" + dtls.Id);
         }
     }
 }

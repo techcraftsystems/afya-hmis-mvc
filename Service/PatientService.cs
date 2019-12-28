@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace AfyaHMIS.Service
 {
-    public interface IPatientService {
+    public interface IPatientService
+    {
         public List<Patient> SearchPatients(string names = "", string identifier = "", string phone = "", string age = "", string gender = "", string visit = "");
         public List<SelectListItem> GetPatientIdentificationTypes();
 
@@ -31,16 +32,20 @@ namespace AfyaHMIS.Service
         public Queues SaveQueue(Queues queue);
     }
 
-    public class PatientService : IPatientService {
+    public class PatientService : IPatientService
+    {
         private readonly ICoreService ICoreService = new CoreService();
 
-        public Patient GetPatient(string uuid) {
+        public Patient GetPatient(string uuid)
+        {
             Patient patient = null;
 
             SqlServerConnection conn = new SqlServerConnection();
             SqlDataReader dr = conn.SqlServerConnect("SELECT pt_idnt, pt_uuid, pt_identifier, pt_notes, pt_added_by, pt_added_on, pt_visit, pst_idnt, pst_status, pi_idnt, pi_identifier, pi_notes, pit_idnt, pit_type, ps_idnt, ps_name, ps_gender, ps_dob, ps_estimate, ps_added_on, ps_added_by, ps_notes, pa_idnt, pa_default, pa_telephone, pa_email, pa_location, pa_added_on, pa_added_by, pa_notes FROM vPatient WHERE pt_uuid COLLATE SQL_Latin1_General_CP1_CS_AS LIKE '" + uuid + "'");
-            if (dr.Read()) {
-                patient = new Patient {
+            if (dr.Read())
+            {
+                patient = new Patient
+                {
                     Id = Convert.ToInt64(dr[0]),
                     Uuid = dr[1].ToString(),
                     Identifier = dr[2].ToString(),
@@ -48,11 +53,13 @@ namespace AfyaHMIS.Service
                     AddedBy = new Users { Id = Convert.ToInt64(dr[4]) },
                     AddedOn = Convert.ToDateTime(dr[5]),
                     LastVisit = Convert.ToDateTime(dr[6]).ToString("dd/MM/yyyy"),
-                    Status = new PatientStatus {
+                    Status = new PatientStatus
+                    {
                         Id = Convert.ToInt64(dr[7]),
                         Name = dr[8].ToString()
                     },
-                    PI = new PatientIdentifier {
+                    PI = new PatientIdentifier
+                    {
                         Id = Convert.ToInt64(dr[9]),
                         Identifier = dr[10].ToString(),
                         Notes = dr[11].ToString(),
@@ -62,7 +69,8 @@ namespace AfyaHMIS.Service
                             Name = dr[13].ToString()
                         }
                     },
-                    Person = new Person {
+                    Person = new Person
+                    {
                         Id = Convert.ToInt64(dr[14]),
                         Name = dr[15].ToString(),
                         Gender = dr[16].ToString(),
@@ -71,7 +79,8 @@ namespace AfyaHMIS.Service
                         AddedOn = Convert.ToDateTime(dr[19]),
                         AddedBy = new Users { Id = Convert.ToInt64(dr[20]) },
                         Notes = dr[21].ToString(),
-                        Address = new PersonAddress {
+                        Address = new PersonAddress
+                        {
                             Id = Convert.ToInt64(dr[22]),
                             Default = Convert.ToBoolean(dr[23]),
                             Telephone = dr[24].ToString(),
@@ -115,7 +124,8 @@ namespace AfyaHMIS.Service
             {
                 while (dr.Read())
                 {
-                    Patient patient = new Patient {
+                    Patient patient = new Patient
+                    {
                         Id = Convert.ToInt64(dr[0]),
                         Uuid = dr[1].ToString(),
                         Identifier = dr[2].ToString(),
@@ -123,20 +133,24 @@ namespace AfyaHMIS.Service
                         AddedBy = new Users { Id = Convert.ToInt64(dr[4]) },
                         AddedOn = Convert.ToDateTime(dr[5]),
                         LastDate = Convert.ToDateTime(dr[6]),
-                        Status = new PatientStatus {
+                        Status = new PatientStatus
+                        {
                             Id = Convert.ToInt64(dr[7]),
                             Name = dr[8].ToString()
                         },
-                        PI = new PatientIdentifier {
+                        PI = new PatientIdentifier
+                        {
                             Id = Convert.ToInt64(dr[9]),
                             Identifier = dr[10].ToString(),
                             Notes = dr[11].ToString(),
-                            Type = new PatientIdentifierType {
+                            Type = new PatientIdentifierType
+                            {
                                 Id = Convert.ToInt64(dr[12]),
                                 Name = dr[13].ToString()
                             }
                         },
-                        Person = new Person {
+                        Person = new Person
+                        {
                             Id = Convert.ToInt64(dr[14]),
                             Name = dr[15].ToString(),
                             Gender = dr[16].ToString(),
@@ -168,26 +182,31 @@ namespace AfyaHMIS.Service
             return search;
         }
 
-        public string GetPatientUuid(Patient patient) {
+        public string GetPatientUuid(Patient patient)
+        {
             SqlServerConnection conn = new SqlServerConnection();
             SqlDataReader dr = conn.SqlServerConnect("SELECT pt_uuid FROM Patient WHERE pt_idnt=" + patient.Id);
-            if (dr.Read()) {
+            if (dr.Read())
+            {
                 return dr[0].ToString();
             }
 
             return "";
         }
 
-        public List<SelectListItem> GetPatientIdentificationTypes() {
+        public List<SelectListItem> GetPatientIdentificationTypes()
+        {
             return ICoreService.GetIEnumerable("SELECT pit_idnt, pit_type FROM PatientIdentifierType ORDER BY pit_order, pit_idnt");
         }
 
-        public string GetPatientIdentifier(Patient patient) {
-            string prefix = patient.Person.Name.Replace(" ", "").Substring(0, 3).ToUpper() + patient.Person.Gender.Substring(0,1).ToUpper();
+        public string GetPatientIdentifier(Patient patient)
+        {
+            string prefix = patient.Person.Name.Replace(" ", "").Substring(0, 3).ToUpper() + patient.Person.Gender.Substring(0, 1).ToUpper();
 
             SqlServerConnection conn = new SqlServerConnection();
             SqlDataReader dr = conn.SqlServerConnect("SELECT ISNULL(MAX(SUBSTRING(pt_identifier, 5, 100)),0)+1 FROM Patient WHERE pt_identifier LIKE '" + prefix + "%'");
-            if (dr.Read()) {
+            if (dr.Read())
+            {
                 return prefix + dr[0].ToString().PadLeft(7, '0');
             }
 
@@ -210,7 +229,7 @@ namespace AfyaHMIS.Service
             if (mnth <= 12)
                 return mnth + (mnth.Equals(1) ? " mnth ago" : " mnths ago");
 
-            int year = (new DateTime(1,1,1) + span).Year - 1;
+            int year = (new DateTime(1, 1, 1) + span).Year - 1;
             if (year <= 5)
                 return year + (year.Equals(1) ? " yr ago" : " yrs ago");
 
@@ -223,21 +242,24 @@ namespace AfyaHMIS.Service
          * Writers
          */
 
-        public Person SavePerson(Person person) {
+        public Person SavePerson(Person person)
+        {
             SqlServerConnection conn = new SqlServerConnection();
             person.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + person.Id + ", @name NVARCHAR(250)='" + person.Name.ToUpper() + "', @gender NVARCHAR(1)='" + person.Gender + "', @dob DATE='" + person.DateOfBirth + "', @actor INT=" + person.AddedBy.Id + ", @estimate BIT='" + person.Estimate + "', @notes NVARCHAR(MAX)='" + person.Notes + "'; IF NOT EXISTS (SELECT ps_idnt FROM Person WHERE ps_idnt=@idnt) BEGIN INSERT INTO Person(ps_name, ps_gender, ps_dob, ps_added_by, ps_estimate, ps_notes) output INSERTED.ps_idnt VALUES (@name, @gender, @dob, @actor, @estimate, @notes) END ELSE BEGIN UPDATE Person SET ps_name=@name, ps_gender=@gender, ps_dob=@dob, ps_estimate=@estimate, ps_notes=@notes output INSERTED.ps_idnt WHERE ps_idnt=@idnt END");
 
             return person;
         }
 
-        public PersonAddress SavePersonAddress(PersonAddress address) {
+        public PersonAddress SavePersonAddress(PersonAddress address)
+        {
             SqlServerConnection conn = new SqlServerConnection();
             address.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + address.Id + ", @default BIT='" + address.Default + "', @person INT=" + address.Person.Id + ", @telephone NVARCHAR(250)='" + address.Telephone + "', @email NVARCHAR(250)='" + address.Email + "', @location NVARCHAR(250)='" + address.Location + "', @user INT=" + address.AddedBy.Id + ", @notes NVARCHAR(250)='" + address.Notes + "'; IF NOT EXISTS (SELECT pa_idnt FROM PersonAddress WHERE pa_idnt=@idnt) BEGIN INSERT INTO PersonAddress(pa_default, pa_person, pa_telephone, pa_email, pa_location, pa_added_by, pa_notes) output INSERTED.pa_idnt VALUES (@default, @person, @telephone, @email, @location, @user, @notes) END ELSE BEGIN UPDATE PersonAddress SET pa_default=@default, pa_person=@person, pa_telephone=@telephone, pa_email=@email, pa_location=@location, pa_notes=@notes output INSERTED.pa_idnt WHERE pa_idnt=@idnt END");
 
             return address;
         }
 
-        public Patient SavePatient(Patient patient) {
+        public Patient SavePatient(Patient patient)
+        {
             SqlServerConnection conn = new SqlServerConnection();
             patient.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + patient.Id + ", @identifier NVARCHAR(50)='" + GetPatientIdentifier(patient) + "', @person INT=" + patient.Person.Id + ", @status INT=" + patient.Status.Id + ", @user INT=" + patient.AddedBy.Id + ", @notes NVARCHAR(MAX)='" + patient.Notes + "'; IF NOT EXISTS (SELECT pt_idnt FROM Patient WHERE pt_idnt=@idnt) BEGIN INSERT INTO Patient(pt_identifier, pt_person, pt_status, pt_added_by, pt_notes) output INSERTED.pt_idnt VALUES (@identifier, @person, @status, @user, @notes) END ELSE BEGIN UPDATE Patient SET pt_status=@status, pt_notes=@notes output INSERTED.pt_idnt WHERE pt_idnt=@idnt END");
 
@@ -252,21 +274,24 @@ namespace AfyaHMIS.Service
             return patient;
         }
 
-        public PatientIdentifier SavePatientIdentifier(PatientIdentifier pi) {
+        public PatientIdentifier SavePatientIdentifier(PatientIdentifier pi)
+        {
             SqlServerConnection conn = new SqlServerConnection();
             pi.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + pi.Id + ", @default BIT='" + pi.Default + "', @patient INT=" + pi.Patient.Id + ", @type INT=" + pi.Type.Id + ", @identifier NVARCHAR(250)='" + pi.Identifier + "', @user INT=" + pi.AddedBy.Id + ", @notes NVARCHAR(MAX)='" + pi.Notes + "'; IF NOT EXISTS (SELECT pi_idnt FROM PatientIdentifier WHERE pi_idnt=@idnt) BEGIN INSERT INTO PatientIdentifier(pi_default, pi_patient, pi_type, pi_identifier, pi_added_by, pi_notes) output INSERTED.pi_idnt VALUES (@default, @patient, @type, @identifier, @user, @notes) END ELSE BEGIN UPDATE PatientIdentifier SET pi_default=@default, pi_type=@type, pi_identifier=@identifier, pi_notes=@notes output INSERTED.pi_idnt WHERE pi_idnt=@idnt END");
 
             return pi;
         }
 
-        public Encounter CreateEncounter(Encounter encounter) {
+        public Encounter CreateEncounter(Encounter encounter)
+        {
             SqlServerConnection conn = new SqlServerConnection();
             encounter.Id = conn.SqlServerUpdate("DECLARE @visit INT=" + encounter.Visit.Id + ", @patient INT=" + encounter.Patient.Id + ", @type INT=" + encounter.Type.Id + ", @user INT=" + encounter.CreatedBy.Id + ", @notes NVARCHAR(250)='" + encounter.Notes + "'; INSERT INTO Encounter (enc_visit, enc_patient, enc_type, enc_created_by, enc_notes) output INSERTED.enc_idnt VALUES (@visit, @patient, @type, @user, @notes)");
 
             return encounter;
         }
 
-        public Visit SaveVisit(Visit visit) {
+        public Visit SaveVisit(Visit visit)
+        {
             SqlServerConnection conn = new SqlServerConnection();
             visit.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + visit.Id + ", @patient INT=" + visit.Patient.Id + ", @type INT=" + visit.Type.Id + ", @code INT=" + visit.ClientCode.Id + ", @scheme NVARCHAR(250)='" + visit.SchemeNumber + "', @barcode NVARCHAR(250)='" + visit.Barcode + "', @medico INT=" + visit.MedicoLegal.Id + ", @user INT=" + visit.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + visit.Notes + "'; IF NOT EXISTS (SELECT vst_idnt FROM Visit WHERE vst_idnt=@idnt) BEGIN INSERT INTO Visit(vst_patient, vst_type, vst_client_code, vst_barcode, vst_scheme_no, vst_medico_legal, vst_created_by, vst_notes) output INSERTED.vst_idnt VALUES (@patient, @type, @code, @barcode, @scheme, @medico, @user, @notes) END ELSE BEGIN UPDATE Visit SET vst_type=@type, vst_client_code=@code, vst_barcode=@barcode, vst_scheme_no=@scheme, vst_medico_legal=@medico, vst_notes=@notes output INSERTED.vst_idnt WHERE vst_idnt=@idnt END");
 
@@ -284,7 +309,7 @@ namespace AfyaHMIS.Service
         public Queues SaveQueue(Queues queue)
         {
             SqlServerConnection conn = new SqlServerConnection();
-            queue.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + queue.Id + ", @visit INT=" + queue.Visit. Id + ", @priority INT=" + queue.Priority.Id + ", @bill INT=" + queue.Bill.Id + ", @room INT=" + queue.Room.Id + ", @user INT=" + queue.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + queue.Notes + "'; IF NOT EXISTS (SELECT qs_idnt FROM Queues WHERE qs_idnt=@idnt) BEGIN INSERT INTO Queues (qs_visit, qs_priority, qs_bill, qs_room, qs_created_by, qs_notes) output INSERTED.qs_idnt VALUES (@visit, @priority, @bill, @room, @user, @notes) END ELSE BEGIN UPDATE Queues SET qs_priority=@priority, qs_room=@room, qs_notes=@notes output INSERTED.qs_idnt WHERE qs_idnt=@idnt END");
+            queue.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + queue.Id + ", @visit INT=" + queue.Visit.Id + ", @priority INT=" + queue.Priority.Id + ", @bill INT=" + queue.Item.Id + ", @room INT=" + queue.Room.Id + ", @user INT=" + queue.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + queue.Notes + "'; IF NOT EXISTS (SELECT qs_idnt FROM Queues WHERE qs_idnt=@idnt) BEGIN INSERT INTO Queues (qs_visit, qs_priority, qs_bill, qs_room, qs_created_by, qs_notes) output INSERTED.qs_idnt VALUES (@visit, @priority, @bill, @room, @user, @notes) END ELSE BEGIN UPDATE Queues SET qs_priority=@priority, qs_room=@room, qs_notes=@notes output INSERTED.qs_idnt WHERE qs_idnt=@idnt END");
 
             return queue;
         }

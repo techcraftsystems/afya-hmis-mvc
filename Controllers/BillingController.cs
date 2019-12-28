@@ -18,6 +18,9 @@ namespace AfyaHMIS.Controllers
         private readonly IFinanceService IFinanceService;
         private readonly IPatientService IPatientService;
 
+        [BindProperty]
+        public BillingBillViewModel BillingModel { get; set; }
+
         public BillingController(IFinanceService finance, IPatientService patient) {
             IFinanceService = finance;
             IPatientService = patient;
@@ -25,7 +28,7 @@ namespace AfyaHMIS.Controllers
 
         [Route("/billing/cashier/")]
         public IActionResult Cashier(BillingCashierViewModel model) {
-            model.Bills = IFinanceService.GetBillingCashierQueue(DateTime.Now, DateTime.Now, new BillsFlag());
+            model.Bills = IFinanceService.GetBillingCashierQueue(DateTime.Now, DateTime.Now, new BillingFlag());
             return View(model);
         }
 
@@ -43,14 +46,15 @@ namespace AfyaHMIS.Controllers
                 return LocalRedirect("/billing/cashier?error=4509");
             }
 
-            model.Completed = IFinanceService.GetBills(model.Patient, null, null, null, null, true);
-            model.Pending = IFinanceService.GetBills(model.Patient, null, null, null, new BillsFlag());
-            model.Departments = IFinanceService.GetBillsDepartments(model.Patient, new BillsFlag());
+            //model.Completed = IFinanceService.GetBills(model.Patient, null, null, null, null, true);
+            model.Invoices = IFinanceService.GetInvoices(model.Patient);
+            model.Pending = IFinanceService.GetBills(model.Patient, null, null, null, new BillingFlag());
+            model.Departments = IFinanceService.GetBillsDepartments(model.Patient, new BillingFlag());
             return View(model);
         }
 
         [Route("/billing/bill/process")]
-        public IActionResult BillProcess(string p, string date, string bill, BillingBillViewModel model)
+        public IActionResult BillProcess(string p, string date, string bills, BillingBillViewModel model)
         {
             model.Patient = IPatientService.GetPatient(p);
             if (model.Patient == null)
@@ -63,8 +67,22 @@ namespace AfyaHMIS.Controllers
                 return LocalRedirect("/billing/cashier?error=4509");
             }
 
-            model.Bills = bill;
+            List<BillsItem> items = IFinanceService.GetBillsItems(bills);
+            foreach(var itm in items) {
+                model.Items.Add(new InvoiceDetails {
+                    Checked = true,
+                    Item = itm
+                });
+            }
 
+            model.Invoice.Patient = model.Patient;
+            model.Bills = bills;
+
+            return View(model);
+        }
+
+        [Route("/billing/invoice")]
+        public IActionResult Invoice(int qp, BillingInvoiceViewModel model) {
             return View(model);
         }
 
@@ -90,14 +108,39 @@ namespace AfyaHMIS.Controllers
             return true;
         }
 
+        [HttpPost]
+        public IActionResult CreateInvoice()
+        {
+            Users user = new Users { Id = long.Parse(HttpContext.User.FindFirst(ClaimTypes.Actor).Value) };
+            Invoice invoice = BillingModel.Invoice;
+            invoice.CreatedBy = user;
+            invoice.Save();
+
+            foreach (var itd in BillingModel.Items) {
+                if (itd.Checked) {
+                    itd.Invoice = invoice;
+                    itd.CreatedBy = user;
+                    itd.Save();
+                }
+                else {
+                    itd.Remove();
+                }
+
+                Bills bill = itd.Item.Bill;
+                bill.SetAutoFlag();
+            }
+
+            return LocalRedirect("/billing/invoice/?qp=" + invoice.Id);
+        }
+
         public bool GetBillProcessingStatus(int idnt) {
             return new Bills { Id = idnt }.IsProcessed();
         }
 
         public JsonResult GetBillingCashierQueue(string start, string stop, string flag = "") {
-            BillsFlag bf = null;
+            BillingFlag bf = null;
             if (!string.IsNullOrEmpty(flag) && long.TryParse(flag, out long dblFlag)) {
-                bf = new BillsFlag {
+                bf = new BillingFlag {
                     Id = dblFlag
                 };
             }

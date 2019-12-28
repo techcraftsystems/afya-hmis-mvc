@@ -7,6 +7,7 @@ namespace AfyaHMIS.Models.Finances
     {
         public long Id { get; set; }
         public Concept Concept { get; set; }
+        public string Code { get; set; }
         public string Name { get; set; }
         public double Amount { get; set; }
         public string Description { get; set; }
@@ -15,6 +16,7 @@ namespace AfyaHMIS.Models.Finances
         {
             Id = 0;
             Concept = new Concept();
+            Code = "0000";
             Name = "";
             Amount = 0;
             Description = "";

@@ -10,7 +10,7 @@ namespace AfyaHMIS.Models.Rooms
         public long Id { get; set; }
         public QueuesPriority Priority { get; set; }
         public Visit Visit { get; set; }
-        public Bills Bill { get; set; }
+        public BillsItem Item { get; set; }
         public Room Room { get; set; }
         public DateTime CreatedOn { get; set; }
         public Users CreatedBy { get; set; }
@@ -20,7 +20,7 @@ namespace AfyaHMIS.Models.Rooms
         {
             Id = 0;
             Priority = new QueuesPriority();
-            Bill = new Bills();
+            Item = new BillsItem();
             Visit = new Visit();
             Room = new Room();
             CreatedBy = new Users();

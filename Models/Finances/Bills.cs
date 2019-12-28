@@ -12,7 +12,7 @@ namespace AfyaHMIS.Models.Finances
         public long Id { get; set; }
         public string Date { get; set; }
         public Visit Visit { get; set; }
-        public BillsFlag Flag { get; set; }
+        public BillingFlag Flag { get; set; }
         public Department Department { get; set; }
         public double Amount { get; set; }
         public double Paid { get; set; }
@@ -35,7 +35,7 @@ namespace AfyaHMIS.Models.Finances
             Id = 0;
             Date = DateTime.Now.ToString("dd/MM/yyyy");
             Visit = new Visit();
-            Flag = new BillsFlag();
+            Flag = new BillingFlag();
             Department = new Department();
             Amount = 0;
             Paid = 0;

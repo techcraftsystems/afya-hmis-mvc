@@ -151,11 +151,17 @@
             </div>
         </section>
 
-        @if (!Model.Completed.Count.Equals(0))
+        @if (!Model.Invoices.Count.Equals(0))
         {
             int count = 0;
 
             <section class="">
+                <div class="ecommerce-header-items">
+                    <div class="result-toggler">
+                        <div class="search-results pb-1">PREVIOUS INVOICES</div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <div class="card-content">
                         <table id="completed-bill-table" class="table table-hover-animation mb-0">
@@ -163,32 +169,31 @@
                                 <tr>
                                     <th width="1" class="pl-2">#</th>
                                     <th scope="col">DATE</th>
-                                    <th scope="col">BILL</th>
+                                    <th scope="col">INVOICE</th>
                                     <th scope="col">PATIENT</th>
-                                    <th scope="col">DEPARTMENT</th>
                                     <th scope="col">STATUS</th>
                                     <th scope="col" class="text-right">AMOUNT</th>
+                                    <th scope="col" class="text-right">BALANCE</th>
                                     <th scope="col" class="text-center">ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var bill in Model.Completed)
+                                @foreach (var invs in Model.Invoices)
                                 {
                                     count++;
 
                                     <tr>
                                         <td width="1" scope="row" class="pl-2">@count</td>
-                                        <td>@bill.Date</td>
-                                        <td>@bill.Id</td>
-                                        <td><a href="/patients/@bill.Visit.Patient.Uuid">@bill.Visit.Patient.Person.Name</a></td>
-                                        <td>@bill.Department.Name</td>
+                                        <td>@invs.Date</td>
+                                        <td>@invs.Id</td>
+                                        <td><a href="/patients/@invs.Patient.Uuid">@invs.Patient.Person.Name</a></td>
                                         <td>
-                                            <span class="badge badge-@(bill.Flag.Id == 1 ? "dark" : "danger")"><span class="">@bill.Flag.Name</span></span>
-                                        
+                                            <span class="badge badge-@(invs.Flag.Id == 1 ? "dark" : (invs.Flag.Id == 2 ? "info" : "danger"))"><span class="">@invs.Flag.Name</span></span>
                                         </td>
-                                        <td class="text-right">@string.Format("{0:N2}", bill.Balance)</td>
+                                        <td class="text-right">@string.Format("{0:N2}", invs.Amount)</td>
+                                        <td class="text-right">@string.Format("{0:N2}", invs.Balance)</td>
                                         <td class="text-center">
-                                            <a class="pointer bill-view" data-idnt="@(bill.Id)" data-code="@(bill.Visit.ClientCode.Name.ToUpper())"> <i class="feather icon-server primary td-action" ></i> </a>
+                                            <a href="/billing/invoice?qp=@invs.Id" class="pointer primary invs-view" data-idnt="@(invs.Id)"> <i class="feather icon-list td-action"> </i> GO</a>
                                         </td>
                                     </tr>
                                 }

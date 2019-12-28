@@ -1,0 +1,89 @@
+﻿@model AfyaHMIS.ViewModel.BillingInvoiceViewModel;
+@{
+    ViewData["Title"] = "Invoice " + Model.Invoice.Id;
+}
+
+<div class="content-detached content-left">
+    <div class="content-body">
+        <div class="shop-content-overlay"></div>
+
+        <section id="ecommerce-searchbar">
+            <div class="row mt-0">
+                <div class="col-sm-12">
+                    <fieldset class="form-group position-relative">
+                        <input type="text" class="form-control search-product pl-2" id="iconLeft5" placeholder="Filter Bills Items">
+                        <div class="form-control-position">
+                            <i class="feather icon-search"></i>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </section>
+
+        <section class="">
+            <div class="card">
+                <div class="card-body">
+                    <div id="invoice-company-details" class="row">
+                        <div class="col-sm-6 col-12 text-left pt-0">
+                            <div class="media pt-0">
+                                <img src="~/images/logo/logo-full.jpg"  width="200" alt="company logo">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-12 text-right pt-0">
+                            <div class="invoice-details">
+                                <h6>MEDIFORTE HOSPITAL KISII</h6>
+                                <h6>P.O. BOX 12384 - 00600,<br/>KISII, KENYA.</h6>
+                            </div>
+                            <h1 class="mb-0">Invoice</h1>
+                        </div>
+
+                        <div class="mt-1 pt-1 pr-0 col-12 row invoice-header">
+                            <div class="col-12 col-sm-6 col-lg-4">
+                                <div><span>PATIENT ID: </span> @(Model.Invoice.Patient.Identifier)</div>
+                                <div><span>NAMES: </span> @(Model.Invoice.Patient.Person.Name)</div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-4 text-center">
+                                <div><span>GENDER: </span> @(Model.Invoice.Patient.Person.Gender == "m" ? "MALE" : (Model.Invoice.Patient.Person.Gender == "f" ? "FEMALE" : "OTHERS"))</div>
+                                <div><span>PT AGE : </span> @(Model.Invoice.Patient.Age)</div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-4 text-right pr-0">
+                                <div><span>INVOICE NO: </span> @Model.Invoice.Id</div>
+                                <div><span>INV DATE : </span> @DateTime.Now.ToString("dd/MM/yyyy")</div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-4">
+                                <div><span>CLIENT-CL: </span> 33/3434</div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-8 pr-0 text-right">
+                                <div>john.ndiamo@gmail.com</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <table id="invoice-bill-table" class="table table-hover-animation mb-0">
+                        <thead>
+                            <tr>
+                                <th width="1" scope="col" class="pl-2">#</th>
+                                <th scope="col">CODE</th>
+                                <th scope="col">DESCRIPTION</th>
+                                <th scope="col">BILL</th>
+                                <th scope="col" class="text-right">PRICE</th>
+                                <th scope="col" class="text-right">QTY</th>
+                                <th scope="col" class="text-right">AMOUNT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                        <tfoot>
+                    </table>
+
+                    <div class="text-right m-1 mb-3">
+                        <button class="btn btn-save btn-outline-primary pointer"><i class="feather icon-save"></i> SAVE</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

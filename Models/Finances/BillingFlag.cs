@@ -1,12 +1,12 @@
 ﻿using System;
 namespace AfyaHMIS.Models.Finances
 {
-    public class BillsFlag
+    public class BillingFlag
     {
         public long Id { get; set; }
         public string Name { get; set; }
 
-        public BillsFlag()
+        public BillingFlag()
         {
             Id = 0;
             Name = "";

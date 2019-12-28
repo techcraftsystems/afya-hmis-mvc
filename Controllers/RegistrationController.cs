@@ -202,14 +202,13 @@ namespace AfyaHMIS.Controllers
             bill.CreatedBy = user;
             bill.Save();
 
-            if (VisitModel.Waiver)
-            {
+            if (VisitModel.Waiver) {
                 bill.Waiver = bill.Amount;
                 bill.WaiverReason = VisitModel.WaiverReason;
                 bill.WaivedBy = user;
                 bill.UpdateWaiver();
 
-                bill.Flag = new BillsFlag { Id = 1 };
+                bill.Flag = new BillingFlag { Id = Constants.FLAG_CLEARED };
                 bill.ProcessedBy = user;
                 bill.UpdateProcess();
             }
@@ -219,8 +218,28 @@ namespace AfyaHMIS.Controllers
             item.CreatedBy = user;
             item.Save();
 
+            //INVOICE/FLAG/CLEAR
+            if (VisitModel.Waiver) {
+                Invoice invoice = new Invoice {
+                    Patient = patient,
+                    Flag = new BillingFlag { Id = Constants.FLAG_CLEARED },
+                    CreatedBy = user,
+                    Notes = "Waivered Bill"
+                };
+                invoice.Save();
+
+                InvoiceDetails details = new InvoiceDetails {
+                    Invoice = invoice,
+                    Item = item,
+                    CreatedBy = user,
+                    Notes = "Waivered Item"
+                };
+                details.Save();
+            }
+
             Queues queue = VisitModel.Queue;
-            queue.Bill = bill;
+            queue.Visit = visit;
+            queue.Item = item;
             queue.CreatedBy = user;
             queue.Save();
 
