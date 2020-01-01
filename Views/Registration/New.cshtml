@@ -47,7 +47,7 @@
                             </div>
                         </div>
 
-                        @using (Html.BeginForm("RegisterNewPatient", "Registration", FormMethod.Post, new { id = "patient-form", onsubmit = "return validateForm()", novalidate = "novalidate", autocomplete = "off" }))
+                        @using (Html.BeginForm("RegisterNewPatient", "Registration", FormMethod.Post, new { id = "patient-form", onsubmit = "return validateRegistrationForm()", novalidate = "novalidate", autocomplete = "off" }))
                         {
                             <div class="row">
                                 <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">

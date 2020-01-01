@@ -69,6 +69,33 @@
         }
     });
 
+    jq('a.btn-add-new').click(function(){
+        var params = "";
+
+        if (jq('#patient-names').val().trim() != ""){
+            params = "?name=" + jq('#patient-names').val().trim()
+        }   
+
+        if (jq('#patient-identification').val().trim() != ""){
+            params += (params == "" ? "?" : "&") + "id=" + jq('#patient-identification').val().trim();
+        }
+
+        if (jq('#patient-contact').val().trim() != ""){
+            params += (params == "" ? "?" : "&") + "phone=" + jq('#patient-contact').val().trim();
+        }
+
+        if (jq('#patient-age').val().trim() != ""){
+            params += (params == "" ? "?" : "&") + "age=" + jq('#patient-age').val().trim();
+        }
+
+        if (jq('#patient-gender').val().trim() != ""){
+            params += (params == "" ? "?" : "&") + "patient_gender=" + jq('#patient-gender').val().trim();
+        }
+
+        console.log(params);
+        window.location.href = "/registration/new" + params;
+    });
+
     jq('div.users-list-table').hide();
 });
 
@@ -135,4 +162,9 @@ function SearchPatients() {
             jq('a.buy-now.vs-button').removeClass('hidden');
         }
     }); 
+}
+
+function validateRegistrationForm(){
+
+    return false;
 }

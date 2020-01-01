@@ -48,13 +48,13 @@ namespace AfyaHMIS.Controllers
         }
 
         [Route("/registration/new")]
-        public IActionResult New(RegistrationNewEditViewModel model, string name = "", string id = "", string phone = "", string age = "", string gender = "") {
+        public IActionResult New(RegistrationNewEditViewModel model, string name = "", string id = "", string phone = "", string age = "", string patient_gender = "") {
             if (!string.IsNullOrEmpty(name))
                 model.Patient.Person.Name = name;
             if (!string.IsNullOrEmpty(id))
                 model.Patient.PI.Identifier = id;
-            if (!string.IsNullOrEmpty(gender))
-                model.Patient.Person.Name = gender;
+            if (!string.IsNullOrEmpty(patient_gender))
+                model.Patient.Person.Gender = patient_gender;
             if (!string.IsNullOrEmpty(phone))
                 model.Patient.Person.Address.Telephone = phone;
             if (!string.IsNullOrEmpty(age) && Double.TryParse(age, out double dblAge) && double.Parse(age) > 0)
