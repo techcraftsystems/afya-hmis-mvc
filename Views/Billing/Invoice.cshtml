@@ -1,89 +1,255 @@
 ﻿@model AfyaHMIS.ViewModel.BillingInvoiceViewModel;
 @{
     ViewData["Title"] = "Invoice " + Model.Invoice.Id;
+    int count = 0;
+    double qnty = 0;
+    double summ = 0;
 }
+<script>
+    var invnumb = @Model.Invoice.Id;
+    var invamts = @Model.Invoice.Balance;
+    var message = "@Model.Message";
+</script>
+<script src="~/js/billing-invoice.js"></script>
+<link rel="stylesheet" type="text/css" href="~/css/pages/invoice.css">
+<style>
+    div.invoice-header{
+        border-top: 1px solid #f8f8f8;
+    }
+    .border-top {
+        border-top: 1px solid #f8f8f8;
+    }
+    div.invoice-header > div > div > span {
+        display: inline-block;
+        width: 100px;
+        font-weight: 800;
+    }
+    tfoot tr:nth-child(3) th,
+    tfoot tr:nth-child(4) th,
+    tfoot tr:nth-child(5) th{
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+    tr.vtop td,
+    tr.vtop th {
+        vertical-align: top;
+    }
+    ul.price-range li i.feather {
+        font-size:1.1em;
+    }
+    #invoice-payment-modal-table tbody td i.feather {
+        font-size: 1.5em
+    }
+</style>
 
 <div class="content-detached content-left">
     <div class="content-body">
         <div class="shop-content-overlay"></div>
-
-        <section id="ecommerce-searchbar">
-            <div class="row mt-0">
-                <div class="col-sm-12">
-                    <fieldset class="form-group position-relative">
-                        <input type="text" class="form-control search-product pl-2" id="iconLeft5" placeholder="Filter Bills Items">
-                        <div class="form-control-position">
-                            <i class="feather icon-search"></i>
-                        </div>
-                    </fieldset>
-                </div>
-            </div>
-        </section>
-
-        <section class="">
-            <div class="card">
-                <div class="card-body">
+        <section class="invoice-page">
+            <div class="card pt-3">
+                <div id="invoice-template" class="card-body">
                     <div id="invoice-company-details" class="row">
                         <div class="col-sm-6 col-12 text-left pt-0">
                             <div class="media pt-0">
-                                <img src="~/images/logo/logo-full.jpg"  width="200" alt="company logo">
+                                <img src="~/images/logo/logo-full.jpg" width="200" alt="company logo">
                             </div>
                         </div>
                         <div class="col-sm-6 col-12 text-right pt-0">
                             <div class="invoice-details">
                                 <h6>MEDIFORTE HOSPITAL KISII</h6>
-                                <h6>P.O. BOX 12384 - 00600,<br/>KISII, KENYA.</h6>
+                                <h6>P.O. BOX 12384 - 00600,<br />KISII, KENYA.</h6>
                             </div>
                             <h1 class="mb-0">Invoice</h1>
                         </div>
 
-                        <div class="mt-1 pt-1 pr-0 col-12 row invoice-header">
-                            <div class="col-12 col-sm-6 col-lg-4">
-                                <div><span>PATIENT ID: </span> @(Model.Invoice.Patient.Identifier)</div>
-                                <div><span>NAMES: </span> @(Model.Invoice.Patient.Person.Name)</div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-4 text-center">
-                                <div><span>GENDER: </span> @(Model.Invoice.Patient.Person.Gender == "m" ? "MALE" : (Model.Invoice.Patient.Person.Gender == "f" ? "FEMALE" : "OTHERS"))</div>
-                                <div><span>PT AGE : </span> @(Model.Invoice.Patient.Age)</div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-4 text-right pr-0">
-                                <div><span>INVOICE NO: </span> @Model.Invoice.Id</div>
-                                <div><span>INV DATE : </span> @DateTime.Now.ToString("dd/MM/yyyy")</div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-4">
-                                <div><span>CLIENT-CL: </span> 33/3434</div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-8 pr-0 text-right">
-                                <div>john.ndiamo@gmail.com</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                <div class="card-content">
+                <div class="card-content border-top pt-1 pb-1">
+                    <table style="width: 100%">
+                        <tr>
+                            <td width="33%" class="pb-0 pl-2"><b>PATIENT ID:</b> @(Model.Invoice.Patient.Identifier)</td>
+                            <td width="33%" class="pb-0 text-center"><b>GENDER: </b> @(Model.Invoice.Patient.Person.Gender == "m" ? "MALE" : (Model.Invoice.Patient.Person.Gender == "f" ? "FEMALE" : "OTHERS"))</td>
+                            <td width="*" class="pb-0 pr-2 text-right"><b>DATE : </b> @DateTime.Now.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                        <tr style="border-top:0 none;">
+                            <td class="pb-0 pl-2"><b>NAMES: </b> @(Model.Invoice.Patient.Person.Name)</td>
+                            <td class="pb-0 pm-1 text-center"><b>PT AGE : </b> @(Model.Invoice.Patient.Age)</td>
+                            <td class="pb-0 pr-2 text-right"><b>INVOICE NO.:</b>  @Model.Invoice.Id</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="card-content" style="min-height: 900px">
                     <table id="invoice-bill-table" class="table table-hover-animation mb-0">
                         <thead>
                             <tr>
                                 <th width="1" scope="col" class="pl-2">#</th>
                                 <th scope="col">CODE</th>
                                 <th scope="col">DESCRIPTION</th>
-                                <th scope="col">BILL</th>
                                 <th scope="col" class="text-right">PRICE</th>
                                 <th scope="col" class="text-right">QTY</th>
                                 <th scope="col" class="text-right">AMOUNT</th>
                             </tr>
                         </thead>
                         <tbody>
-                            
+                            @foreach (var dtls in Model.Details)
+                            {
+                                count++;
+                                qnty += dtls.Item.Quantity;
+                                summ += dtls.Item.Quantity * dtls.Item.Price;
+
+                                <tr class="border-top">
+                                    <td class="text-right">@count</td>
+                                    <td>@dtls.Item.Service.Code</td>
+                                    <td>@dtls.Item.Service.Name</td>
+                                    <td class="text-right">@string.Format("{0:N}", dtls.Item.Price)</td>
+                                    <td class="text-right">@string.Format("{0:N}", dtls.Item.Quantity)</td>
+                                    <td class="text-right bold-text">@string.Format("{0:N}", dtls.Item.Price * dtls.Item.Quantity)</td>
+                                </tr>
+                            }
                         </tbody>
                         <tfoot>
+                            <tr>
+                                <th></th>
+                                <th colspan="3">TOTAL</th>
+                                <th class="text-right">@string.Format("{0:N}", qnty)</th>
+                                <th class="text-right">@string.Format("{0:N}", summ)</th>
+                            </tr>
+                            <tr class="bg-white">
+                                <th colspan="5" class="text-right">Payment:<br /><b>Balance:</b></th>
+                                <th class="text-right">@string.Format("{0:N}", Model.Invoice.Paid)<br /><b>@string.Format("{0:N}", Model.Invoice.Balance)</b></th>
+                            </tr>
+                            <tr class="bg-white border-top vtop">
+                                <td class="p-2" colspan="3">
+                                    @if (Model.Invoice.Paid > 1) {
+                                        <span><b>Amount Received:</b> @Model.Amount Shillings Only</span><br /><br />
+                                    }
+                                    else {
+                                        <span>No Payments Made</span><br /><br />
+                                    }
+
+                                    @foreach (var pymt in Model.Tendered) {
+                                        <div>@(pymt.Mode.Name.ToUpper()): KES @string.Format("{0:N}", pymt.Amount)@(pymt.Reference == "" ? "" : ", " + pymt.Reference)</div>
+                                    }
+                                </td>
+                                <td nowrap colspan="3" class="text-right p-2"><b>For MEDIFORTE HOSPITAL LTD</b><br /><br /><br />Authorized Signature</td>
+                            </tr>
+                            <tr>
+                            </tr>
+                        </tfoot>
                     </table>
 
                     <div class="text-right m-1 mb-3">
-                        <button class="btn btn-save btn-outline-primary pointer"><i class="feather icon-save"></i> SAVE</button>
+
                     </div>
+                </div>
+
+                <div id="invoice-footer" class="text-right p-3">
+                    <p>All invoices are due before service is offered. Please transer the amounts to the business amount below</p>
+                    <p class="bank-details mb-0">
+                        <span class="mr-4">PAYBILL: <strong>243530</strong></span>
+                        <span>ACCOUNT: <strong>@(Model.Invoice.Patient.Identifier)</strong></span>
+                    </p>
                 </div>
             </div>
         </section>
+    </div>
+</div>
+
+<div class="print-ignore sidebar-detached sidebar-right">
+    <div class="sidebar">
+        <div class="card col-sm-12" style="width:260px">
+            <div class="card-body">
+                <div class="multi-range-price">
+                    <div class="multi-range-title pb-75">
+                        <h6 class="filter-title mb-0">Invoices Actions</h6>
+                    </div>
+                    <ul class="list-unstyled price-range pointer">
+                        <li class="payment-action primary">
+                            <span class="vs-radio-con pb-25">
+                                <i class="feather icon-shopping-bag"></i><span class="ml-50">Make Payment</span>
+                            </span>
+                        </li>
+                        <li class="edit-action">
+                            <span class="vs-radio-con warning pb-25">
+                                <i class="feather icon-edit-1"></i><span class="ml-50">Edit Invoice</span>
+                            </span>
+                        </li>
+                        <li class="email-action">
+                            <span class="vs-radio-con info">
+                                <i class="feather icon-paperclip"></i><span class="ml-50">Email Invoice</span>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                <hr />
+                <div id="clear-filters">
+                    <button class="btn btn-block btn-print btn-primary">PRINT INVOICE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="invoice-payment-modal" tabindex="-1" role="dialog" aria-labelledby="bill-details-modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary white">
+                <h5 class="modal-title" id="">Make Payment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+
+            @using (Html.BeginForm("PostInvoicePayments", "Billing", FormMethod.Post, new { @class="modal-body payment-form", autocomplete = "off" }))
+            {
+                <div>
+                    <span class="modal-text-title">PATIENT: </span><span class="modal-text-bold">@(Model.Invoice.Patient.Person.Name)</span>
+                </div>
+                <div>
+                    <span class="modal-text-title">INVOICE: </span><span class="modal-text-bold">00@(Model.Invoice.Id)</span>
+                </div>
+
+                <table id="invoice-payment-modal-table" class="table mt-1">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width:1px">&nbsp;</th>
+                            <th scope="col" width="14%">MODE</th>
+                            <th scope="col">REFERENCE</th>
+                            <th scope="col">ACCOUNT</th>
+                            <th scope="col">AMOUNT</th>
+                            <th scope="col" width="35%">DESCRIPTION</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int ix = 0; ix < Model.Payments.Count; ix++) {
+                            <tr class="pymts @(ix == 0 ? "":"hidden")">
+                                <td class="">@(ix+1).</td>
+                                <td class="p-0 width-70px">@Html.DropDownListFor(model => model.Payments[ix].Mode.Id, Model.Modes, new { @class = "form-control" })</td>
+                                <td class="p-0 pl-25">@Html.TextBoxFor(model => model.Payments[ix].Reference, new { @class = "form-control", placeholder = "Reference" })</td>
+                                <td class="p-0 pl-25">@Html.TextBoxFor(model => model.Payments[ix].Account, new { @class = "form-control", placeholder = "Account" })</td>
+                                <td class="p-0 pl-25">@Html.TextBoxFor(model => model.Payments[ix].Amount, new { @class = "form-control text-right", placeholder = "0.00" })</td>
+                                <td class="p-0 pl-25">@Html.TextBoxFor(model => model.Payments[ix].Notes, new { @class = "form-control", placeholder = "Description" })</td>
+                                <td class="p-0 pl-25"><i class="feather icon-trash-2 danger pointer btn-remove-row"></i></td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                    </tfoot>
+                </table>
+
+                @Html.HiddenFor(model => model.Invoice.Id)
+                @Html.HiddenFor(model => model.Payment.Amount)
+            }
+
+            <div class="modal-footer inline-block">
+                <button type="button" class="btn btn-icon btn-icon rounded-circle btn-warning ml-2 waves-effect waves-light btn-add-row"><i class="feather icon-plus"></i></button>
+                <button type="button" class="btn btn-outline-primary btn-void-items waves-effect waves-light right btn-make-payment">MAKE PAYMENT</button>
+            </div>
+        </div>
     </div>
 </div>

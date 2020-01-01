@@ -236,7 +236,20 @@ namespace AfyaHMIS.Controllers
                 };
                 details.Save();
 
-                //Invoice Payment
+                InvoicePayment payment = new InvoicePayment {
+                    Invoice = invoice,
+                    CreatedBy = user,
+                    Notes = "Waiver Payment"
+                };
+                payment.Save();
+
+                InvoicePaymentDetails pd = new InvoicePaymentDetails {
+                    Mode = new BillingMode { Id = Constants.MODE_WAIVER },
+                    Reference = "CASHIER-00",
+                    Amount = bill.Amount,
+                    Notes = "Waiver Payment"
+                };
+                pd.Save();
             }
 
             Queues queue = VisitModel.Queue;

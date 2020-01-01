@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using AfyaHMIS.Models.Patients;
 using AfyaHMIS.Service;
 
@@ -19,8 +20,7 @@ namespace AfyaHMIS.Models.Finances
         public DateTime CreatedOn { get; set; }
         public string Notes { get; set; }
 
-        public Invoice()
-        {
+        public Invoice() {
             Id = 0;
             Patient = new Patient();
             Flag = new BillingFlag();
@@ -34,6 +34,14 @@ namespace AfyaHMIS.Models.Finances
 
         public Invoice Save() {
             return IFinanceService.SaveInvoice(this);
+        }
+
+        public Invoice SetAutoFlag() {
+            return IFinanceService.SetInvoiceAutoFlag(this);
+        }
+
+        public List<Bills> GetBills() {
+            return IFinanceService.GetBills(this);
         }
     }
 }

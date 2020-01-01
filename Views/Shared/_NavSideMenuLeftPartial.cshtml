@@ -1,4 +1,9 @@
-﻿<div class="main-menu menu-fixed menu-light menu-accordion menu-shadow" data-scroll-to-active="true">
+﻿@{
+    string controller = this.ViewContext.RouteData.Values["controller"].ToString();
+    string action = this.ViewContext.RouteData.Values["action"].ToString();
+}
+
+<div class="main-menu menu-fixed menu-light menu-accordion menu-shadow" data-scroll-to-active="true">
     <div class="navbar-header">
         <ul class="nav navbar-nav flex-row">
             <li class="nav-item mr-auto">
@@ -7,12 +12,14 @@
                     <h2 class="brand-text mb-0"></h2>
                 </a>
             </li>
+
             <li class="nav-item nav-toggle">
                 <a class="nav-link modern-nav-toggle pr-0" data-toggle="collapse">
                     <i class="feather icon-square d-block d-xl-none font-medium-4 primary toggle-icon"></i>
                     <i class="toggle-icon feather icon-x-square font-medium-4 d-none d-xl-block collapse-toggle-icon primary" data-ticon="icon-disc"></i>
                 </a>
             </li>
+
         </ul>
     </div>
     <div class="shadow-bottom"></div>
@@ -29,23 +36,40 @@
                     </li>
                 </ul>
             </li>
-            <li class=" nav-item">
-                <a href="#"><i class="feather icon-list"></i><span class="menu-title" data-i18n="Data List">Registration</span></a>
-                <ul class="menu-content active">
-                    <li>
-                        <a href="/registration/search"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="List View">Search Patients</span></a>
-                    </li>
-                    <li>
-                        <a href="/registration/new"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="Thumb View">Register New</span></a>
-                    </li>
-                    <li>
-                        <a href="/registration/anonymous"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="Thumb View">Anonymous</span></a>
-                    </li>
-                    <li>
-                        <a href="/registration/recent"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="Thumb View">Recent Patients</span></a>
-                    </li>
-                </ul>
-            </li>
+
+            @if (controller.Equals("Registration"))
+            {
+                <li class=" nav-item">
+                    <a href="#"><i class="feather icon-list"></i><span class="menu-title" data-i18n="Data List">Registration</span></a>
+                    <ul class="menu-content active">
+                        <li>
+                            <a href="/registration/search"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="List View">Search Patients</span></a>
+                        </li>
+                        <li>
+                            <a href="/registration/new"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="Thumb View">Register New</span></a>
+                        </li>
+                        <li>
+                            <a href="/registration/anonymous"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="Thumb View">Anonymous</span></a>
+                        </li>
+                        <li>
+                            <a href="/registration/recent"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="Thumb View">Recent Patients</span></a>
+                        </li>
+                    </ul>
+                </li>
+            }
+            else if (controller.Equals("Billing")) {
+                <li class=" nav-item">
+                    <a href="#"><i class="feather icon-list"></i><span class="menu-title" data-i18n="Data List">Billing/Finance</span></a>
+                    <ul class="menu-content active">
+                        <li>
+                            <a href="/billing/cashier"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="List View">Cashier</span></a>
+                        </li>
+                        <li>
+                            <a href="/registration/new"><i class="feather icon-circle"></i><span class="menu-item" data-i18n="Thumb View">Finance</span></a>
+                        </li>
+                    </ul>
+                </li>
+            }
 
             <li class=" navigation-header">
                 <span>Applications</span>

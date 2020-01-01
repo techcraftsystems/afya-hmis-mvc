@@ -14,10 +14,15 @@ namespace AfyaHMIS.Models.Finances
         public DateTime CreatedOn { get; set; }
         public Users CreatedBy { get; set; }
         public string Notes { get; set; }
+        public bool Voided { get; set; }
+        public Users VoidedBy { get; set; }
+        public DateTime? VoidedOn { get; set; }
+        public string VoidReason { get; set; }
 
         public InvoiceDetails() {
             Id = 0;
             Checked = false;
+            Voided = false;
             Item = new BillsItem();
             Invoice = new Invoice();
             CreatedBy = new Users();

@@ -2,7 +2,7 @@
         DARK LAYOUT
 =========================================================*/
 .invoice-page {
-  padding: 2.2rem; }
+  padding: 0; }
   .invoice-page .recipient-contact i,
   .invoice-page .company-contact i {
     padding-right: 0.2rem;
@@ -20,6 +20,7 @@
 
 @media print {
   .content-header,
+  .print-ignore,
   .buy-now,
   .btn-print,
   .footer,
@@ -38,7 +39,7 @@
     padding: 0 !important; }
   #invoice-footer {
     position: relative;
-    top: -80px !important; }
+    top: 80px !important; }
   #invoice-company-details,
   #invoice-footer {
     margin-top: 5rem !important; }

@@ -49,3 +49,12 @@ fieldset div.error {
     margin-top: 7px;
     padding-left: 15px;
 }
+.bold-text {
+    font-weight: bold;
+}
+.inline-block{
+    display: inline-block;
+}
+.right {
+    float: right;
+}

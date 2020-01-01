@@ -10,6 +10,7 @@ using AfyaHMIS.Models.Patients;
 using AfyaHMIS.Models.Persons;
 using AfyaHMIS.Models.Registrations;
 using AfyaHMIS.Models.Rooms;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace AfyaHMIS.Service
 {
@@ -19,13 +20,20 @@ namespace AfyaHMIS.Service
         public ClientCodeRates GetClientCodeBillableRate(ClientCode code, BillableService service);
 
         public List<Bills> GetBills(Patient patient, Visit visit, DateTime? start, DateTime? stop, BillingFlag flag, bool otherFlags = false);
+        public List<Bills> GetBills(Invoice invoice);
         public List<Bills> GetBillingCashierQueue(DateTime start, DateTime stop, BillingFlag flag);
 
         public List<BillsItem> GetBillsItems(string bills);
         public List<BillsItem> GetBillsItems(Bills bill, bool ignoreVoid, bool ignoreProcessed, string conditions = "");
         public List<BillsDepartment> GetBillsDepartments(Patient patient, BillingFlag flag);
 
-        public List<Invoice> GetInvoices(Patient patient);
+        public List<BillingMode> GetBillingModes(bool includeVoid = false);
+        public List<SelectListItem> GetBillingModeIEnumerable(bool includeVoid = false);
+
+        public Invoice GetInvoice(long idnt);
+        public List<Invoice> GetInvoices(Patient patient, string conditions = "");
+        public List<InvoiceDetails> GetInvoiceDetails(Invoice invoice, bool includeVoid = false, string conditions = "");
+        public List<InvoicePaymentDetails> GetPaymentSummary(Invoice invoice);
 
         public bool GetBillProcessingStatus(Bills bill);
 
@@ -38,12 +46,18 @@ namespace AfyaHMIS.Service
         public BillsItem VoidBillsItem(BillsItem item);
 
         public Invoice SaveInvoice(Invoice invoice);
+        public Invoice SetInvoiceAutoFlag(Invoice invoice);
         public InvoiceDetails SaveInvoiceDetails(InvoiceDetails details);
         public void RemoveInvoiceDetail(InvoiceDetails dtls);
+
+        public InvoicePayment SaveInvoicePayment(InvoicePayment payment);
+        public InvoicePaymentDetails SaveInvoicePaymentDetails(InvoicePaymentDetails details);
     }
 
 	public class FinanceService : IFinanceService 
     {
+        private ICoreService ICoreService = new CoreService();
+
         public ClientCodeRates GetClientCodeBillableRate(ClientCode code, BillableService service)
         {
             SqlServerConnection conn = new SqlServerConnection();
@@ -174,6 +188,20 @@ namespace AfyaHMIS.Service
                 }
             }
 
+            return bills;
+        }
+
+        public List<Bills> GetBills(Invoice invoice) {
+            List<Bills> bills = new List<Bills>();
+            SqlServerConnection conn = new SqlServerConnection();
+            SqlDataReader dr = conn.SqlServerConnect("SELECT bill FROM vInvoiceBills WHERE invs=" + invoice.Id);
+            if (dr.HasRows) {
+                while (dr.Read()) {
+                    bills.Add(new Bills {
+                        Id = Convert.ToInt64(dr[0])
+                    });
+                }
+            }
 
             return bills;
         }
@@ -310,13 +338,31 @@ namespace AfyaHMIS.Service
             return depts;
         }
 
-        public List<Invoice> GetInvoices(Patient patient)
-        {
+        public List<BillingMode> GetBillingModes(bool includeVoid = false) {
+            List<BillingMode> modes = new List<BillingMode>();
+            //TODO: Complete GetBilling Modes
+
+
+            return modes;
+        }
+
+        public List<SelectListItem> GetBillingModeIEnumerable(bool includeVoid = false) {
+            return ICoreService.GetIEnumerable("SELECT bm_idnt, bm_mode FROM BillingMode " + (includeVoid ? "" : "WHERE bm_void=0"));
+        }
+
+        public Invoice GetInvoice(long idnt) {
+            var invoices = GetInvoices(null, "inv_idnt=" + idnt);
+            return invoices.Count == 0 ? null : invoices[0];
+        }
+
+        public List<Invoice> GetInvoices(Patient patient, string conditions = "") {
             List<Invoice> invoices = new List<Invoice>();
 
             string query = "";
             if (patient != null)
                 query = "WHERE inv_patient=" + patient.Id;
+            if (!string.IsNullOrEmpty(conditions))
+                query = (string.IsNullOrEmpty(query) ? "WHERE " : " AND ") + conditions;
 
             SqlServerConnection conn = new SqlServerConnection();
             SqlDataReader dr = conn.SqlServerConnect("SELECT inv_idnt, inv_created_by, inv_created_on, inv_notes, inv_amount, ISNULL(ip_tendered,0) inv_paid, bf_idnt, bf_flag, pt_idnt, pt_uuid, pt_identifier, pt_added_on, pt_added_by, pt_notes, pst_idnt, pst_status, ps_idnt, ps_name, ps_gender, ps_dob, ps_estimate, ps_added_on, ps_added_by, ps_notes FROM vInvoice INNER JOIN BillsFlag ON inv_flag=bf_idnt INNER JOIN Patient ON inv_patient=pt_idnt INNER JOIN PatientStatus ON pt_status=pst_idnt INNER JOIN Person ON pt_person=ps_idnt LEFT OUTER JOIN vInvoicePayment ON inv_idnt=ip_invoice " + query + " ORDER BY inv_created_on DESC, inv_idnt DESC");
@@ -367,6 +413,74 @@ namespace AfyaHMIS.Service
             return invoices;
         }
 
+        public List<InvoiceDetails> GetInvoiceDetails(Invoice invoice, bool includeVoid = false, string conditions = "") {
+            List<InvoiceDetails> details = new List<InvoiceDetails>();
+
+            string query = "";
+            if (invoice != null)
+                query = "WHERE id_invoice=" + invoice.Id;
+            if (!includeVoid)
+                query += (string.IsNullOrEmpty(query) ? "WHERE " : " AND ")  + "bi_void=0";
+            if (!string.IsNullOrEmpty(conditions))
+                query += (string.IsNullOrEmpty(query) ? "WHERE " : " AND ") + conditions;
+
+            SqlServerConnection conn = new SqlServerConnection();
+            SqlDataReader dr = conn.SqlServerConnect("SELECT id_idnt, id_invoice, id_added_by, id_added_on, id_notes, bi_idnt, bi_quantity, bi_amount, bi_created_by, bi_created_on, bi_description, bi_void, bi_void_on, bi_void_by, bi_void_reason, bs_idnt, bs_code, bs_service, bs_description, bs_amount, bs_concept FROM InvoiceDetails INNER JOIN BillsItem ON id_bill_item=bi_idnt INNER JOIN BillableService ON bi_service=bs_idnt " + query);
+            if (dr.HasRows) {
+                while (dr.Read()) {
+                    details.Add(new InvoiceDetails {
+                        Id = Convert.ToInt64(dr[0]),
+                        Invoice = new Invoice { Id = Convert.ToInt64(dr[1]) },
+                        CreatedBy = new Users { Id = Convert.ToInt64(dr[2]) },
+                        CreatedOn = Convert.ToDateTime(dr[3]),
+                        Notes = dr[4].ToString(),
+                        Item = new BillsItem {
+                            Id = Convert.ToInt64(dr[5]),
+                            Quantity = Convert.ToDouble(dr[6]),
+                            Price = Convert.ToDouble(dr[7]),
+                            CreatedBy = new Users { Id = Convert.ToInt64(dr[8]) },
+                            CreatedOn = Convert.ToDateTime(dr[9]),
+                            Description = dr[10].ToString(),
+                            Voided = Convert.ToBoolean(dr[11]),
+                            VoidedOn = dr[12].ToString() == "" ? (DateTime?)null : Convert.ToDateTime(dr[12]),
+                            VoidedBy = new Users { Id = Convert.ToInt64(dr[13]) },
+                            VoidedReason = dr[14].ToString(),
+                            Service = new BillableService {
+                                Id = Convert.ToInt64(dr[15]),
+                                Code = dr[16].ToString(),
+                                Name = dr[17].ToString(),
+                                Description = dr[18].ToString(),
+                                Amount = Convert.ToDouble(dr[19]),
+                                Concept = new Concept { Id = Convert.ToInt64(dr[20]) }
+                            }
+                        }
+                    });
+                }
+            }
+
+            return details;
+        }
+
+        public List<InvoicePaymentDetails> GetPaymentSummary(Invoice invoice) {
+            List<InvoicePaymentDetails> summary = new List<InvoicePaymentDetails>();
+            SqlServerConnection conn = new SqlServerConnection();
+            SqlDataReader dr = conn.SqlServerConnect("SELECT ipd_mode, bm_mode, SUM(ipd_amount)ipd_amts, ipd_reference FROM InvoicePaymentDetails INNER JOIN InvoicePayment ON ipd_payment=ip_idnt INNER JOIN BillingMode ON ipd_mode=bm_idnt WHERE ip_invoice=" + invoice.Id + " GROUP BY ipd_mode, ipd_reference, bm_mode ORDER BY ipd_mode, ipd_reference, bm_mode");
+            if (dr.HasRows) {
+                while (dr.Read()) {
+                    summary.Add(new InvoicePaymentDetails {
+                        Mode = new BillingMode {
+                            Id = Convert.ToInt64(dr[0]),
+                            Name = dr[1].ToString()
+                        },
+                        Amount = Convert.ToDouble(dr[2]),
+                        Reference = dr[3].ToString(),
+                    });
+                }
+            }
+
+            return summary;
+        }
+
         public bool GetBillProcessingStatus(Bills bill) {
             SqlServerConnection conn = new SqlServerConnection();
             SqlDataReader dr = conn.SqlServerConnect("SELECT TOP(1) bli_inv FROM vBillingInvoices WHERE bli_bill=" + bill.Id);
@@ -400,7 +514,7 @@ namespace AfyaHMIS.Service
 
         public Bills UpdateBillsAutoFlag(Bills bill) {
             SqlServerConnection conn = new SqlServerConnection();
-            conn.SqlServerUpdate("DECLARE @idnt INT=" + bill.Id + ", @flag INT=0, @user INT=" + bill.ProcessedBy.Id + "; SELECT @flag=CASE WHEN COUNT(*)=1 THEN MAX(bi_state) ELSE 1 END FROM vBillingState WHERE bi_bill=@idnt GROUP BY bi_bill; UPDATE Bills SET bl_flag=@flag, bl_processed_on=GETDATE(), bl_processed_by=@user WHERE bl_flag=0 AND bl_idnt=@idnt");
+            conn.SqlServerUpdate("DECLARE @idnt INT=" + bill.Id + ", @flag INT=0, @user INT=" + bill.ProcessedBy.Id + "; SELECT @flag=CASE WHEN COUNT(*)=1 THEN MAX(bi_state) ELSE 1 END FROM vBillingState WHERE bi_bill=@idnt GROUP BY bi_bill; UPDATE Bills SET bl_flag=@flag, bl_processed_on=GETDATE(), bl_processed_by=@user WHERE bl_idnt=@idnt");
 
             return bill;
         }
@@ -426,6 +540,17 @@ namespace AfyaHMIS.Service
             return invoice;
         }
 
+        public Invoice SetInvoiceAutoFlag(Invoice invoice) {
+            SqlServerConnection conn = new SqlServerConnection();
+            invoice.Flag.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + invoice.Id + ", @flag INT=1; SELECT @flag=CASE WHEN inv_amount=ISNULL(ip_tendered,0) THEN 2 ELSE 1 END FROM vInvoice LEFT OUTER JOIN vInvoicePayment ON inv_idnt=ip_invoice WHERE inv_idnt=@idnt; UPDATE Invoice SET inv_flag=@flag output @flag WHERE inv_idnt=@idnt");
+
+            foreach (var bill in invoice.GetBills()) {
+                bill.SetAutoFlag();
+            }
+
+            return invoice;
+        }
+
         public InvoiceDetails SaveInvoiceDetails(InvoiceDetails dtls) {
             SqlServerConnection conn = new SqlServerConnection();
             dtls.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + dtls.Id + ", @invs INT=" + dtls.Invoice.Id + ", @item INT=" + dtls.Item.Id + ", @user INT=" + dtls.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + dtls.Notes + "'; IF NOT EXISTS (SELECT id_idnt FROM InvoiceDetails WHERE id_idnt=@idnt OR id_bill_item=@item) BEGIN INSERT INTO InvoiceDetails (id_invoice, id_bill_item, id_added_by, id_notes) output INSERTED.id_idnt VALUES (@invs, @item, @user, @notes) END ELSE BEGIN UPDATE InvoiceDetails SET id_notes=@notes output INSERTED.id_idnt WHERE id_idnt=@idnt END");
@@ -436,6 +561,19 @@ namespace AfyaHMIS.Service
         public void RemoveInvoiceDetail(InvoiceDetails dtls) {
             SqlServerConnection conn = new SqlServerConnection();
             conn.SqlServerUpdate("DELETE FROM InvoiceDetails WHERE id_idnt=" + dtls.Id);
+        }
+
+        public InvoicePayment SaveInvoicePayment(InvoicePayment payment) {
+            SqlServerConnection conn = new SqlServerConnection();
+            payment.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + payment.Id + ", @invs INT=" + payment.Invoice.Id + ", @user INT=" + payment.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + payment.Notes + "'; IF NOT EXISTS (SELECT ip_idnt FROM InvoicePayment WHERE ip_idnt=@idnt) BEGIN INSERT INTO InvoicePayment (ip_invoice, ip_created_by, ip_notes) output INSERTED.ip_idnt VALUES (@invs, @user, @notes) END ELSE BEGIN UPDATE InvoicePayment SET ip_notes=@notes output INSERTED.ip_idnt WHERE ip_idnt=@idnt END");
+
+            return payment;
+        }
+        public InvoicePaymentDetails SaveInvoicePaymentDetails(InvoicePaymentDetails details) {
+            SqlServerConnection conn = new SqlServerConnection();
+            details.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + details.Id + ", @pymt INT=" + details.Payment.Id + ", @mode INT=" + details.Mode.Id + ", @amount FLOAT=" + details.Amount + ", @refs NVARCHAR(250)='" + details.Reference + "', @account NVARCHAR(250)='" + details.Account + "', @notes NVARCHAR(MAX)='" + details.Notes + "'; IF NOT EXISTS (SELECT ipd_idnt FROM InvoicePaymentDetails WHERE ipd_idnt=@idnt) BEGIN INSERT INTO InvoicePaymentDetails (ipd_payment, ipd_mode, ipd_amount, ipd_reference, ipd_account, ipd_notes) output INSERTED.ipd_idnt VALUES (@pymt, @mode, @amount, @refs, @account, @notes) END ELSE BEGIN UPDATE InvoicePaymentDetails SET ipd_mode=@mode, ipd_amount=@amount, ipd_reference=@refs, ipd_account=@account, ipd_notes=@notes output INSERTED.ipd_idnt WHERE ipd_idnt=@idnt END");
+
+            return details;
         }
     }
 }
