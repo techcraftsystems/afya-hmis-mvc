@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using AfyaHMIS.Extensions;
 using AfyaHMIS.Models;
+using AfyaHMIS.Models.Concepts;
+using AfyaHMIS.Models.Finances;
 using AfyaHMIS.Models.Rooms;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -10,6 +12,9 @@ namespace AfyaHMIS.Service
 {
     public interface ICoreService {
         public List<Modules> GetApplicationModules();
+
+        public Room GetRoom(long idnt);
+        public List<Room> GetRooms(RoomType type, Concept concept, BillableService service, bool includeVoid = false, string conditions = "", string filter = "");
 
         public List<SelectListItem> GetIEnumerable(string query);
         public List<SelectListItem> GetClientCodesIEnumerable();
@@ -33,6 +38,57 @@ namespace AfyaHMIS.Service
             }
 
             return ienumarable;
+        }
+
+        public Room GetRoom(long idnt) {
+            List<Room> rooms = GetRooms(null, null, null, true, "rm_idnt=" + idnt);
+            return rooms.Count.Equals(0) ? null : rooms[0];
+        }
+
+        public List<Room> GetRooms(RoomType type, Concept concept, BillableService service, bool includeVoid = false, string conditions = "", string filter = "") {
+            List<Room> rooms = new List<Room>();
+            SqlServerConnection conn = new SqlServerConnection();
+
+            string query = "";
+
+            if (type != null)
+                query = "WHERE rm_type=" + type.Id;
+            if (concept != null)
+                query += (query == "" ? "WHERE " : " AND ") + "rm_concept=" + concept.Id;
+            if (service != null)
+                query += (query == "" ? "WHERE " : " AND ") + "rm_service=" + service.Id;
+            if (!includeVoid)
+                query += (query == "" ? "WHERE " : " AND ") + "rm_void=0";
+            if (!string.IsNullOrEmpty(conditions))
+                query += (query == "" ? "WHERE " : " AND ") + conditions;
+            if (!string.IsNullOrEmpty(filter))
+                query += conn.GetQueryString(filter, "rm_room+'-'+rt_type+'-'+bs_service+'-'+CAST(bs_amount AS NVARCHAR)", "", true, false);
+
+            SqlDataReader dr = conn.SqlServerConnect("SELECT rm_idnt, rm_void, rm_room, rm_concept, rt_idnt, rt_void, rt_concept, rt_type, bs_idnt, bs_code, bs_concept, bs_service, bs_amount, bs_description FROM Rooms INNER JOIN RoomType ON rm_type=rt_idnt INNER JOIN BillableService ON rm_service=bs_idnt " + query);
+            if (dr.HasRows) {
+                while (dr.Read()) {
+                    rooms.Add(new Room {
+                        Id = Convert.ToInt64(dr[0]),
+                        Void = Convert.ToBoolean(dr[1]),
+                        Name = dr[2].ToString(),
+                        Concept = new Concept { Id = Convert.ToInt64(dr[3]) },
+                        Type = new RoomType {
+                            Id = Convert.ToInt64(dr[4]),
+                            Void = Convert.ToBoolean(dr[5]),
+                            Concept = new Concept { Id = Convert.ToInt64(dr[6]) },
+                            Name = dr[7].ToString(),
+                        },
+                        Service = new BillableService {
+                            Id = Convert.ToInt64(dr[8]),
+                            Code = dr[9].ToString(),
+                            Concept = new Concept { Id = Convert.ToInt64(dr[10]) },
+                            Name = dr[11].ToString(),
+                        }
+                    });
+                }
+            }
+
+            return rooms;
         }
 
         public List<SelectListItem> GetClientCodesIEnumerable() {

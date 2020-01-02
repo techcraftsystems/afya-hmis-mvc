@@ -74,10 +74,9 @@ namespace AfyaHMIS.Extensions
             if (query != "")
                 query += ")";
 
-            if (sAdditionalString != "")
-            {
+            if (sAdditionalString != "") {
                 if (query == "")
-                    query = " WHERE " + sAdditionalString;
+                    query = (where ? " WHERE " : " AND ") + sAdditionalString;
                 else
                     query += " AND " + sAdditionalString;
             }

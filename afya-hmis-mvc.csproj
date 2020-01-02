@@ -22,5 +22,7 @@
     <Folder Include="Views\Registration\" />
     <Folder Include="Models\Administrations\" />
     <Folder Include="Views\Billing\" />
+    <Folder Include="Views\Outpatient\" />
+    <Folder Include="Models\Outpatients\" />
   </ItemGroup>
 </Project>

@@ -55,12 +55,6 @@ jq(function() {
         GetBillingCashierQueue();
     });
 
-    jq('form input, form select').on('keypress',function(e) {
-        if(e.which == 13) {
-            GetBillingCashierQueue();
-        }
-    });
-
     setInterval(function() {
         GetBillingCashierQueue();
     }, 60000); 

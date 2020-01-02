@@ -13,8 +13,7 @@ namespace AfyaHMIS
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
+        public Startup(IConfiguration configuration) {
             Configuration = configuration;
         }
 
@@ -25,7 +24,7 @@ namespace AfyaHMIS
         {
             services.Configure<CookiePolicyOptions>(options =>
             {
-                options.CheckConsentNeeded = context => true;
+                options.CheckConsentNeeded = context => false;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
@@ -50,6 +49,7 @@ namespace AfyaHMIS
             services.AddScoped<IDoctorService, DoctorService>();
             services.AddScoped<IPatientService, PatientService>();
             services.AddScoped<IFinanceService, FinanceService>();
+            services.AddScoped<IOutpatientService, OutpatientService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

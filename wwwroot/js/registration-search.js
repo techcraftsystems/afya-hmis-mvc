@@ -165,6 +165,5 @@ function SearchPatients() {
 }
 
 function validateRegistrationForm(){
-
-    return false;
+    return true;
 }
