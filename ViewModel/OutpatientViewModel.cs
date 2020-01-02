@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace AfyaHMIS.ViewModel
 {
-    public class OutpatientTriageQueueViewModel {
+    public class OutpatientQueueViewModel {
         public Room Room { get; set; }
         public string Date { get; set; }
         public List<Queues> Queue { get; set; }
         public List<SelectListItem> Types { get; set; }
 
-        public OutpatientTriageQueueViewModel() {
+        public OutpatientQueueViewModel() {
             Room = new Room();
             Date = DateTime.Now.ToString("dd/MM/yyyy");
             Queue = new List<Queues>();
@@ -20,8 +20,13 @@ namespace AfyaHMIS.ViewModel
 
     public class OutpatientTriageViewVModel
     {
-        public OutpatientTriageViewVModel()
-        {
+        public OutpatientTriageViewVModel() {
+        }
+    }
+
+    public class OutpatientDoctorViewVModel
+    {
+        public OutpatientDoctorViewVModel() {
         }
     }
 }

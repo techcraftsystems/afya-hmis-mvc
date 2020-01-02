@@ -1,6 +1,6 @@
 ﻿@model AfyaHMIS.ViewModel.OutpatientQueueViewModel;
 @{
-    ViewData["Title"] = "Triage Queue";
+    ViewData["Title"] = "Doctor's Queue";
 }
 
 <script src="~/vendors/js/tables/datatable/pdfmake.min.js"></script>
@@ -16,7 +16,7 @@
 <script src="~/vendors/js/pickers/pickadate/picker.date.js"></script>
 <script src="~/vendors/js/pickers/pickadate/legacy.js"></script>
 
-<script src="~/js/outpatient-triage.queue.js"></script>
+<script src="~/js/outpatient-doctor.queue.js"></script>
 
 <link rel="stylesheet" type="text/css" href="~/vendors/css/pickers/pickadate/pickadate.css">
 <link rel="stylesheet" type="text/css" href="~/vendors/css/tables/datatable/datatables.min.css">
@@ -49,7 +49,7 @@
     <section class="users-list-wrapper">
         <div class="card">
             <div class="card-header">
-                <h4 class="card-title">Triage Queue</h4>
+                <h4 class="card-title">Doctor's Queue</h4>
                 <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
                 <div class="heading-elements">
                     <ul class="list-inline mb-0">
@@ -148,7 +148,7 @@
                                                 <td>@q.Visit.Patient.Age</td>
                                                 <td>@q.Visit.Patient.Person.Gender</td>
                                                 <td>@q.Priority.Name</td>
-                                                <td>@(q.SeenBy.Id.Equals(0) ? "—" : "Being Seen")</td>
+                                                <td>@(q.SeenBy.Id.Equals(0) ? "—" : "Dr. " + q.SeenBy.Name)</td>
                                                 <td>
                                                     <a href="/outpatient/triage?qid=@(q.Id)&pt=@(q.Visit.Patient.Uuid)"> <i class="feather icon-airplay td-action"></i></a>
                                                     <a class="pointer redirect-link" data-idnt="@(q.Id)"> <i class="feather icon-x danger td-action"></i></a>
@@ -165,4 +165,3 @@
         </div>
     </section>
 </div>
-

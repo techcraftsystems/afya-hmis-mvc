@@ -68,8 +68,8 @@ function GetTriageQueue() {
             tbl.clear().draw();
             
             jq.each(results, function(i, bl) {
-                var iStatus = (bl.seenBy.id == 0 ? "—" : "Being Seen");
-                var iIcons = '&nbsp; <a href="/outpatient/triage?qid=' + bl.id + '&pt=' + bl.visit.patient.uuid + '"><i class="feather icon-airplay td-action"></i></a> <a class="pointer redirect-link" data-idnt="' + bl.id + '"> <i class="feather icon-x danger td-action"></i></a>';
+                var iStatus = (bl.seenBy.id == 0 ? "—" : "Dr. " + bl.seenBy.name);
+                var iIcons = '&nbsp; <a href="/outpatient/doctor?qid=' + bl.id + '&pt=' + bl.visit.patient.uuid + '"><i class="feather icon-airplay td-action"></i></a> <a class="pointer redirect-link" data-idnt="' + bl.id + '"> <i class="feather icon-x danger td-action"></i></a>';
              
                 tbl.row.add([
                     bl.ix,
@@ -100,7 +100,7 @@ function SetCookie() {
         url: '/Outpatient/SetCookie',
         data: {
             "value": jq("#Room_Id").val(),
-            "queue": "triage.room"
+            "queue": "doctor.room"
         }
     }); 
 }
