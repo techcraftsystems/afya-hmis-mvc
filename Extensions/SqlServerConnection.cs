@@ -29,15 +29,14 @@ namespace AfyaHMIS.Extensions
             }
         }
 
-        public long SqlServerUpdate(string SqlString) {
+        public long SqlServerUpdate(string sqlstring) {
             try {
-                SqlCommand command = new SqlCommand(SqlString, Conn);
+                SqlCommand command = new SqlCommand(sqlstring, Conn);
                 command.Connection.Open();
 
-                if (SqlString.ToLower().Contains("output"))
+                if (sqlstring.ToLower().Contains("output"))
                     return Convert.ToInt64(command.ExecuteScalar());
-                else
-                {
+                else {
                     command.ExecuteNonQuery();
                     return 0;
                 }
@@ -87,6 +86,5 @@ namespace AfyaHMIS.Extensions
         private string GetValidSqlString(String query) {
             return query.Replace("'", "''");
         }
-
     }
 }

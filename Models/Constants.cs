@@ -33,5 +33,8 @@
         //CONCEPTS
         public const long MEDICO_LEGAL = 11;
         public const long REFERRAL_TYPE = 7;
+        public const long MOBILITY = 100126286;
+        public const long AVPU = 100126288;
+        public const long TRAUMA = 100001452;
     }
 }

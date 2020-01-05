@@ -138,8 +138,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var q in Model.Queue)
-                                        {
+                                        @foreach (var q in Model.Queue) {
                                             <tr>
                                                 <td>@q.Ix</td>
                                                 <td>@q.Date</td>
@@ -150,7 +149,7 @@
                                                 <td>@q.Priority.Name</td>
                                                 <td>@(q.SeenBy.Id.Equals(0) ? "—" : "Dr. " + q.SeenBy.Name)</td>
                                                 <td>
-                                                    <a href="/outpatient/triage?qid=@(q.Id)&pt=@(q.Visit.Patient.Uuid)"> <i class="feather icon-airplay td-action"></i></a>
+                                                    <a href="/outpatient/doctor?qid=@(q.Id)&pt=@(q.Visit.Patient.Uuid)"> <i class="feather icon-airplay td-action"></i></a>
                                                     <a class="pointer redirect-link" data-idnt="@(q.Id)"> <i class="feather icon-x danger td-action"></i></a>
                                                 </td>
                                             </tr>

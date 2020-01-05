@@ -18,8 +18,9 @@ namespace AfyaHMIS.Service
 
         public List<SelectListItem> GetIEnumerable(string query);
         public List<SelectListItem> GetClientCodesIEnumerable();
-        public List<SelectListItem> GetRoomsIEnumerable();
+        public List<SelectListItem> GetRoomsIEnumerable(string exclude = "");
         public List<SelectListItem> GetRoomsIEnumerable(RoomType Type);
+        public List<SelectListItem> GetQueuePriorityIEnumerable(bool order = false);
     }
 
     public class CoreService : ICoreService
@@ -95,12 +96,19 @@ namespace AfyaHMIS.Service
             return GetIEnumerable("SELECT cl_idnt, cl_code+' :: '+cl_name FROM ClientCodes ORDER BY cl_code, cl_name");
         }
 
-        public List<SelectListItem> GetRoomsIEnumerable() {
-            return GetIEnumerable("SELECT rt_idnt, rt_type FROM RoomType WHERE rt_void=0");
+        public List<SelectListItem> GetRoomsIEnumerable(string exclude = "") {
+            string query = "WHERE rt_void=0";
+            if (!string.IsNullOrEmpty(exclude))
+                query += " AND rt_idnt NOT IN (" + exclude + ")";
+            return GetIEnumerable("SELECT rt_idnt, rt_type FROM RoomType " + query);
         }
 
         public List<SelectListItem> GetRoomsIEnumerable(RoomType type) {
             return GetIEnumerable("SELECT rm_idnt, rm_room FROM Rooms WHERE rm_void=0 AND rm_type=" + type.Id);
+        }
+
+        public List<SelectListItem> GetQueuePriorityIEnumerable(bool order = false) {
+            return GetIEnumerable("SELECT qp_idnt, qp_priority FROM QueuesPriority " + (order ? "ORDER BY qp_order" : ""));
         }
 
         public List<Modules> GetApplicationModules()

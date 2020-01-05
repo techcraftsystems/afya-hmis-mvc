@@ -7,6 +7,8 @@ namespace AfyaHMIS.Models.Rooms
 {
     public class Queues
     {
+        private IPatientService IPatientService = new PatientService();
+
         public long Id { get; set; }
         public long Ix { get; set; }
         public string Date { get; set; }
@@ -38,7 +40,15 @@ namespace AfyaHMIS.Models.Rooms
         }
 
         public Queues Save() {
-            return new PatientService().SaveQueue(this);
+            return IPatientService.SaveQueue(this);
+        }
+
+        public Queues StartEncounter() {
+            return IPatientService.StartEncounter(this);
+        }
+
+        public Queues CompleteEncounter() {
+            return IPatientService.CompleteEncounter(this);
         }
     }
 }

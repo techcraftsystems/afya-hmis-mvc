@@ -70,6 +70,7 @@ function validateForm(){
         return false;
     }
 
+    toastr.success('Creating visit details..', 'Visit', { "timeOut": 0, "closeButton": true });
     return true;
 }
 

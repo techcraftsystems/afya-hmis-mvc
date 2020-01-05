@@ -1,0 +1,29 @@
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  color: #7367f0!important;
+  background-color: transparent!important;
+  font-weight: bold;
+  padding-left: 1.2em!important;
+}
+.nav.nav-pills {
+  border-right: 1px solid rgba(0,0,0,.05);
+}
+.line-vs-tabs {
+  background: linear-gradient(30deg,rgba(115,103,204,1),rgba(115,103,204,.5))!important;
+  -webkit-box-shadow: 0 0 8px 0 rgba(115,103,204,.4)!important;
+  box-shadow: 0 0 8px 0 rgba(115,103,204,.4)!important;
+}
+.line-vs-tabs {
+  left: auto!important;
+  right: 0;
+}
+.line-vs-tabs {
+  width: 100px;
+  height: 2px;
+  display: block;
+  position: absolute;
+  -webkit-transition: all .2s ease;
+  transition: all .2s ease;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: left,right;
+}

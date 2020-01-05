@@ -30,6 +30,8 @@ namespace AfyaHMIS.Service
         public ReferralDoctors SaveReferralDoctors(ReferralDoctors referral);
 
         public Queues SaveQueue(Queues queue);
+        public Queues StartEncounter(Queues queue);
+        public Queues CompleteEncounter(Queues queue);
     }
 
     public class PatientService : IPatientService
@@ -306,10 +308,23 @@ namespace AfyaHMIS.Service
             return referral;
         }
 
-        public Queues SaveQueue(Queues queue)
-        {
+        public Queues SaveQueue(Queues queue) {
             SqlServerConnection conn = new SqlServerConnection();
             queue.Id = conn.SqlServerUpdate("DECLARE @idnt INT=" + queue.Id + ", @visit INT=" + queue.Visit.Id + ", @priority INT=" + queue.Priority.Id + ", @bill INT=" + queue.Item.Id + ", @room INT=" + queue.Room.Id + ", @user INT=" + queue.CreatedBy.Id + ", @notes NVARCHAR(MAX)='" + queue.Notes + "'; IF NOT EXISTS (SELECT qs_idnt FROM Queues WHERE qs_idnt=@idnt) BEGIN INSERT INTO Queues (qs_visit, qs_priority, qs_bill, qs_room, qs_created_by, qs_notes) output INSERTED.qs_idnt VALUES (@visit, @priority, @bill, @room, @user, @notes) END ELSE BEGIN UPDATE Queues SET qs_priority=@priority, qs_room=@room, qs_notes=@notes output INSERTED.qs_idnt WHERE qs_idnt=@idnt END");
+
+            return queue;
+        }
+
+        public Queues StartEncounter(Queues queue) {
+            SqlServerConnection conn = new SqlServerConnection();
+            conn.SqlServerUpdate("DECLARE @idnt INT=" + queue.Id + ", @user INT=" + queue.SeenBy.Id + "; UPDATE Queues SET qs_started_on=GETDATE(), qs_seen_by=@user WHERE qs_idnt=@idnt");
+
+            return queue;
+        }
+
+        public Queues CompleteEncounter(Queues queue) {
+            SqlServerConnection conn = new SqlServerConnection();
+            conn.SqlServerUpdate("DECLARE @idnt INT=" + queue.Id + "; UPDATE Queues SET qs_ended_on=GETDATE() WHERE qs_idnt=@idnt");
 
             return queue;
         }

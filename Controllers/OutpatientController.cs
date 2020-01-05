@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Globalization;
+using System.Security.Claims;
+using AfyaHMIS.Extensions;
 using AfyaHMIS.Models;
+using AfyaHMIS.Models.Concepts;
+using AfyaHMIS.Models.Outpatients;
 using AfyaHMIS.Models.Rooms;
 using AfyaHMIS.Service;
 using AfyaHMIS.ViewModel;
@@ -14,16 +18,25 @@ namespace AfyaHMIS.Controllers
     public class OutpatientController : Controller
     {
         private readonly ICoreService ICoreService;
+        private readonly IPatientService IPatientService;
         private readonly IOutpatientService IOutpatientService;
+        private readonly IConceptService IConceptService;
 
-        public OutpatientController(ICoreService core, IOutpatientService outpatient) {
+        [BindProperty]
+        public OutpatientTriageViewVModel TriageModel { get; set; }
+
+        public OutpatientController(ICoreService core, IOutpatientService outpatient, IPatientService patient, IConceptService concept) {
             ICoreService = core;
+            IPatientService = patient;
+            IConceptService = concept;
             IOutpatientService = outpatient;
         }
 
         [Route("/outpatient/triage.queue")]
-        public IActionResult TriageQueue(OutpatientQueueViewModel model) {
-            model.Types = ICoreService.GetRoomsIEnumerable(new RoomType { Id = Constants.ROOM_TRIAGE });        
+        public IActionResult TriageQueue(OutpatientQueueViewModel model, string date = "",string error = "") {
+            model.Types = ICoreService.GetRoomsIEnumerable(new RoomType { Id = Constants.ROOM_TRIAGE });
+
+            var queueDate = DateTime.Now;
 
             string room = HttpContext.Request.Cookies["triage.room"];
             if (string.IsNullOrEmpty(room) && model.Types.Count > 0) {
@@ -38,15 +51,35 @@ namespace AfyaHMIS.Controllers
                 room = "0";
             }
 
+            if (error == "1011")
+                model.Message = "Invalid patient. Queue request didn't match the passed patient";
+            if (!string.IsNullOrEmpty(date))
+                queueDate = DateTime.ParseExact(date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+            model.Date = queueDate.ToString("dd/MM/yyyy");
             model.Room = ICoreService.GetRoom(Convert.ToInt64(room));
-            model.Queue = IOutpatientService.GetQueue(model.Room, DateTime.Now);
+            model.Queue = IOutpatientService.GetQueue(model.Room, queueDate);
 
             return View(model);
         }
 
         [Route("/outpatient/triage")]
-        public IActionResult TriageView(int qid, string pt, OutpatientTriageViewVModel model) {
-            //Validate the QueueID isn't processed and that it's valid(not closed) for the selected room
+        public IActionResult Triage(int qid, string pt, OutpatientTriageViewVModel model) {
+            model.Patient = IPatientService.GetPatient(pt);
+            model.Queue = IOutpatientService.GetQueue(qid);
+
+            if (!model.Patient.Id.Equals(model.Queue.Visit.Patient.Id)) {
+                return LocalRedirect("/outpatient/triage.queue?error=1011");
+            }
+
+            model.MobilityOpts = IConceptService.GetConceptAnswersIEnumerable(new Concept { Id = Constants.MOBILITY });
+            model.AvpuOpts = IConceptService.GetConceptAnswersIEnumerable(new Concept { Id = Constants.AVPU });
+            model.TraumaOpts = IConceptService.GetConceptAnswersIEnumerable(new Concept { Id = Constants.TRAUMA });
+
+            model.Rooms = ICoreService.GetRoomsIEnumerable("1");
+            model.Types = ICoreService.GetRoomsIEnumerable(new RoomType { Id = Constants.ROOM_OPD });
+            model.Priority = ICoreService.GetQueuePriorityIEnumerable();
+
             return View(model);
         }
 
@@ -75,9 +108,51 @@ namespace AfyaHMIS.Controllers
         }
 
         [Route("/outpatient/doctor")]
-        public IActionResult DoctorView(int qid, string pt, OutpatientDoctorViewVModel model) {
+        public IActionResult Doctor(int qid, string pt, OutpatientDoctorViewVModel model) {
             //Validate the QueueID isn't processed and that it's valid(not closed) for the selected room
             return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult SaveTriage() {
+            Users user = new Users { Id = long.Parse(HttpContext.User.FindFirst(ClaimTypes.Actor).Value) };
+            Queues queue = IOutpatientService.GetQueue(TriageModel.Queue.Id);
+
+            Triage triage = TriageModel.Triage;
+            triage.Visit = queue.Visit;
+            triage.Queue = queue;
+
+            //Test::Mobility/Trauma/Avpu && convert to int
+            if (string.IsNullOrEmpty(triage.Mobility.Value))
+                triage.Mobility.Value = "0";
+            if (string.IsNullOrEmpty(triage.Trauma.Value))
+                triage.Trauma.Value = "0";
+            if (string.IsNullOrEmpty(triage.AVPU.Value))
+                triage.AVPU.Value = "0";
+
+            //Sanitize TextAreas
+            triage.Situation.Value = triage.Situation.Value.ToValidString();
+            triage.Background.Value = triage.Background.Value.ToValidString();
+            triage.Assessment.Value = triage.Assessment.Value.ToValidString();
+            triage.Recommendation.Value = triage.Recommendation.Value.ToValidString();
+            triage.Notes = triage.Notes.ToValidString();
+
+            //Save Triage
+            triage.CreatedBy = user;
+            triage.Save();
+
+            if (!queue.StartOn.HasValue) {
+                queue.SeenBy = user;
+                queue.StartEncounter();
+            }
+            queue.CompleteEncounter();
+
+            var dest = TriageModel.SendTo;
+            dest.Visit = queue.Visit;
+            dest.CreatedBy = user;
+            dest.Save();
+
+            return LocalRedirect("/outpatient/triage.queue" + (queue.CreatedOn.Date.Equals(DateTime.Now.Date) ? "" : "?date=" + TriageModel.Queue.Date));
         }
 
         public JsonResult GetOutpatientQueue(int room, string date) {
@@ -94,7 +169,17 @@ namespace AfyaHMIS.Controllers
                 HttpContext.Response.Cookies.Append(queue, value, opts);
             }
 
-            return Ok("success");
+            return Ok(Json("success"));
+        }
+
+        public IActionResult StartTriage(long qid) {
+            Queues queue = new Queues {
+                Id = qid,
+                SeenBy = new Users { Id = long.Parse(HttpContext.User.FindFirst(ClaimTypes.Actor).Value) }
+            };
+            queue.StartEncounter();
+
+            return Ok(Json("success"));
         }
     }
 }

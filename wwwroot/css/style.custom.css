@@ -58,10 +58,21 @@ fieldset div.error {
 .right {
     float: right;
 }
-
+.triage-header h4 {
+    color: #636363;
+}
 
 
 
 .pink {
     color: #ea5455;
+}
+.bullet.bullet-grey {
+    background-color: #8b9cac;
+}
+.bullet.bullet-mild {
+    background-color: #99c728;
+}
+.bullet.bullet-yellow {
+    background-color: #ffff00;
 }

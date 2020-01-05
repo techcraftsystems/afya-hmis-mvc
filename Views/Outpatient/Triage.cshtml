@@ -1,0 +1,569 @@
+﻿@model AfyaHMIS.ViewModel.OutpatientTriageViewVModel;
+@{
+    ViewData["Title"] = "Triage";
+}
+
+<link rel="stylesheet" type="text/css" href="~/vendors/css/extensions/nouislider.min.css">
+<link rel="stylesheet" type="text/css" href="~/css/plugins/extensions/noui-slider.css">
+<link rel="stylesheet" type="text/css" href="~/css/core/colors/palette-noui.css">
+<link rel="stylesheet" type="text/css" href="~/vendors/css/extensions/jquery.contextMenu.min.css">
+<link rel="stylesheet" type="text/css" href="~/vendors/css/extensions/shepherd-theme-default.css">
+<link rel="stylesheet" type="text/css" href="~/css/plugins/extensions/context-menu.css">
+<link rel="stylesheet" type="text/css" href="~/css/plugins/tour/tour.css">
+<link rel="stylesheet newest" type="text/css" href="~/css/views/outpatient-triage.css">
+
+<script>
+    var qid = @Model.Queue.Id;
+    var sid = @Model.Queue.SeenBy.Id;
+</script>
+<script src="~/vendors/js/extensions/wNumb.js"></script>
+<script src="~/vendors/js/extensions/nouislider.min.js"></script>
+<script src="~/vendors/js/extensions/jquery.contextMenu.min.js"></script>
+<script src="~/vendors/js/extensions/shepherd.min.js"></script>
+<script src="~/js/outpatient-triage.view.js"></script>
+
+<div class="content-body">
+    <section class="page-users-view">
+    </section>
+
+    <section id="page-account-settings">
+        <div class="row">
+            <!-- left menu section -->
+            <div class="col-md-3 col-lg-2 mb-2 mb-md-0 pr-0">
+                <ul class="nav nav-pills flex-column mt-md-0 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link d-flex py-75 active" id="li-triage-vitals" data-toggle="pill" href="#triage-vitals" aria-expanded="true">
+                            <i class="feather icon-user mr-50 font-medium-3"></i>
+                            Patient Vitals
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex py-75" id="li-triage-ews" data-toggle="pill" href="#triage-ews" aria-expanded="false">
+                            <i class="feather icon-activity mr-50 font-medium-3"></i>
+                            E.W.S
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex py-75" id="account-pill-info" data-toggle="pill" href="#account-vertical-info" aria-expanded="false">
+                            <i class="feather icon-info mr-50 font-medium-3"></i>
+                            SBAR
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex py-75" id="account-pill-connections" data-toggle="pill" href="#account-vertical-connections" aria-expanded="false">
+                            <i class="feather icon-archive mr-50 font-medium-3"></i>
+                            Pain Scale
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex py-75" id="li-triage-prescriptions" data-toggle="pill" href="#triage-prescriptions" aria-expanded="false">
+                            <i class="fa fa-medkit mr-50 font-medium-3"></i>
+                            Dispenses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex py-75" id="account-pill-notifications" data-toggle="pill" href="#account-vertical-notifications" aria-expanded="false">
+                            <i class="feather icon-message-circle mr-50 font-medium-3"></i>
+                            View Summary
+                        </a>
+                    </li>
+                </ul>
+                <span class="line-vs-tabs" style="left: 0px; width: 2px; height: 47px; transform: scaleX(1); top: 0px;"></span>
+            </div>
+            <!-- right content section -->
+            <div class="col-md-9 col-lg-10">
+                <div class="card">
+                    @using (Html.BeginForm("SaveTriage", "Outpatient", FormMethod.Post, new { @class = "card-content", id = "triage-form", onsubmit = "return validateTriageForm()", autocomplete = "off" }))
+                    {
+                        <div class="card-body p-0">
+                            <div class="row">
+                                <!-- patient header -->
+                                <div class="col-12">
+                                    <div class="card mb-0">
+                                        <div class="card-body pb-0">
+                                            <div class="row pb-1" style="border-bottom: 1px solid #d9d9d9;">
+                                                <div class="users-view-image mr-1">
+                                                    <img src="~/images/avatar/fever@(Model.Patient.Person.Gender == "f" ? "-1":"").png" class="users-avatar-shadow rounded mb-0 ml-1" alt="avatar" style="height:40px">
+                                                </div>
+                                                <div class="mt-0">
+                                                    <div><span class="font-weight-bold">@(Model.Patient.Person.Name)</span> / @(Model.Patient.Person.Gender.Equals("m") ? "Male" : "Female") @(Model.Patient.GetAge())</div>
+                                                    <div class="patient-idnt">Patient ID: @(Model.Patient.Identifier)</div>
+                                                </div>
+                                                <div class="mt-0 mr-1" style="position: absolute; right: 0">
+                                                    <a class="btn btn-outline-info"><i class="feather icon-printer"></i></a>
+                                                    <a class="btn btn-outline-warning"><i class="feather icon-mail"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-content p-1">
+                                <div role="tabpanel" class="tab-pane active" id="triage-vitals" aria-labelledby="account-pill-general" aria-expanded="true">
+                                    <div class="triage-header">
+                                        <h4 class="card-title">Patient Vitals</h4>
+                                    </div>
+
+                                    <div class="row">
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Patient_Person_Name">Temparature</label>
+                                            @Html.TextBoxFor(model => model.Triage.Temparature.Value, new { @class = "form-control validate", placeholder = "Temparature" })
+                                            <div class="form-control-position">
+                                                <i class="feather icon-thermometer"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Patient_Person_Name">Systolic Blood Pressure</label>
+                                            @Html.TextBoxFor(model => model.Triage.BpSystolic.Value, new { @class = "form-control validate", placeholder = "Blood Pressure" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-expand"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Patient_Person_Name">Diastolic Blood Pressure</label>
+                                            @Html.TextBoxFor(model => model.Triage.BpDiastolic.Value, new { @class = "form-control validate", placeholder = "Blood Pressure" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-compress"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Patient_Person_Name">Respiratory Rate</label>
+                                            @Html.TextBoxFor(model => model.Triage.RespiratoryRate.Value, new { @class = "form-control validate", placeholder = "Respiratory Rate" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-circle-o-notch"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Patient_Person_Name">Pulse Rate</label>
+                                            @Html.TextBoxFor(model => model.Triage.PulseRate.Value, new { @class = "form-control validate", placeholder = "Pulse Rate" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-heartbeat"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Patient_Person_Name">Respiratory Rate</label>
+                                            @Html.TextBoxFor(model => model.Triage.OxygenSaturation.Value, new { @class = "form-control validate", placeholder = "Oxygen Saturation" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-adjust"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_Mobility_Value">Mobility</label>
+                                            @Html.DropDownListFor(model => model.Triage.Mobility.Value, Model.MobilityOpts, "Select Option", new { @class = "form-control" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-wheelchair"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_Trauma_Value">Trauma</label>
+                                            @Html.DropDownListFor(model => model.Triage.Trauma.Value, Model.TraumaOpts, "Select Option", new { @class = "form-control" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-gavel"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_AVPU_Value">AVPU</label>
+                                            @Html.DropDownListFor(model => model.Triage.AVPU.Value, Model.AvpuOpts, "Select Option", new { @class = "form-control" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-bullhorn"></i>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="triage-header">
+                                        <h4 class="card-title">Body Mass/Circumferences</h4>
+                                    </div>
+
+                                    <div class="row">
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Patient_Person_Name">Weight</label>
+                                            @Html.TextBoxFor(model => model.Triage.Weight.Value, new { @class = "form-control validate", placeholder = "Weight" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-odnoklassniki"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Patient_Person_Name">Height</label>
+                                            @Html.TextBoxFor(model => model.Triage.Height.Value, new { @class = "form-control validate", placeholder = "Height" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-sort-amount-asc"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        @if (Model.Patient.GetAgeInYears() > 12) {
+                                            <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                                <label for="Triage_BMI_Value">B.M.I</label>
+                                                @Html.TextBoxFor(model => model.Triage.BMI.Value, new { @class = "form-control validate", placeholder = "BMI" })
+                                                <div class="form-control-position">
+                                                    <i class="fa fa-newspaper-o"></i>
+                                                </div>
+                                            </fieldset>
+                                        }
+                                    </div>
+
+                                    <div class="row">
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_BMI_Value">MUAC</label>
+                                            @Html.TextBoxFor(model => model.Triage.MUAC.Value, new { @class = "form-control validate", placeholder = "MUAC" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-repeat"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_BMI_Value">Chest Circumference</label>
+                                            @Html.TextBoxFor(model => model.Triage.Chest.Value, new { @class = "form-control validate", placeholder = "Chest" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-user"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_BMI_Value">Abdominal Circumference</label>
+                                            @Html.TextBoxFor(model => model.Triage.Abdominal.Value, new { @class = "form-control validate", placeholder = "Abdominal" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-child"></i>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="d-flex flex-sm-row flex-column justify-content-end pt-1">
+                                        <button type="button" class="btn btn-next btn-primary waves-effect waves-light white" data-tabs="1">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane fade" id="triage-ews" role="tabpanel" aria-labelledby="account-pill-password" aria-expanded="false">
+                                    <div class="triage-header">
+                                        <h4 class="card-title">Early Warning Score</h4>
+                                    </div>
+
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th width="1">#</th>
+                                                <th>DESCRIPTION</th>
+                                                <th>VALUE</th>
+                                                <th>SCORE</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row">1</th>
+                                                <td>RESPIRATORY RATE</td>
+                                                <td>-</td>
+                                                <td>0.0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">2</th>
+                                                <td>HEART RATE</td>
+                                                <td>-</td>
+                                                <td>0.0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">3</th>
+                                                <td>BLOOD PRESSURE</td>
+                                                <td>-</td>
+                                                <td>0.0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">4</th>
+                                                <td>MOBILITY</td>
+                                                <td>-</td>
+                                                <td>0.0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">5</th>
+                                                <td>TRAUMA</td>
+                                                <td>-</td>
+                                                <td>0.0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">6</th>
+                                                <td>AVPU</td>
+                                                <td>-</td>
+                                                <td>0.0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div class="pt-1 pb-1">
+                                        <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="0">
+                                            Previous
+                                        </button>
+
+                                        <button type="button" class="btn btn-next btn-primary waves-effect waves-light white right" data-tabs="2">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane fade" id="account-vertical-info" role="tabpanel" aria-labelledby="account-pill-info" aria-expanded="false">
+                                    <div class="triage-header">
+                                        <h4 class="card-title">SBAR</h4>
+                                    </div>
+
+                                    <div class="row">
+                                        <fieldset class="col-12 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_Situation_Value">Situation</label>
+                                            @Html.TextAreaFor(model => model.Triage.Situation.Value, new { @class = "form-control validate", placeholder = "Situation" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-sticky-note-o"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_Situation_Value">Background</label>
+                                            @Html.TextAreaFor(model => model.Triage.Background.Value, new { @class = "form-control validate", placeholder = "Background" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-sticky-note-o"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_Situation_Value">Assessment</label>
+                                            @Html.TextAreaFor(model => model.Triage.Assessment.Value, new { @class = "form-control validate", placeholder = "Assessment" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-sticky-note-o"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_Situation_Value">Recommendation</label>
+                                            @Html.TextAreaFor(model => model.Triage.Recommendation.Value, new { @class = "form-control validate", placeholder = "Recommendation" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-sticky-note-o"></i>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="pt-1 pb-1">
+                                        <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="1">
+                                            Previous
+                                        </button>
+
+                                        <button type="button" class="btn btn-next btn-primary waves-effect waves-light white right" data-tabs="3">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="account-vertical-connections" role="tabpanel" aria-labelledby="account-pill-connections" aria-expanded="false">
+                                    <div class="triage-header">
+                                        <h4 class="card-title">Pain Scale</h4>
+                                    </div>
+
+                                    <div class="row">
+                                        <fieldset class="col-12">
+                                            <div id="pips-range" class="mt-1 mb-3"></div>
+                                            @Html.HiddenFor(model => model.Triage.PainScale.Value, new { @class = "form-control validate", placeholder = "Pain Scale" })
+                                        </fieldset>
+
+                                        <div class="bullets-group-1 d-flex mt-2 pl-1">
+                                            <div class="category-business mr-1">
+                                                <span class="bullet bullet-grey bullet-sm mr-25"></span>
+                                                0 &mdash;No Pain
+                                            </div>
+                                            <div class="category-work mr-1">
+                                                <span class="bullet bullet-success bullet-sm mr-25"></span>
+                                                1-2 &mdash;Mild
+                                            </div>
+                                            <div class="category-work mr-1">
+                                                <span class="bullet bullet-mild bullet-sm mr-25"></span>
+                                                3-4 &mdash;Moderate
+                                            </div>
+                                            <div class="category-personal mr-1">
+                                                <span class="bullet bullet-yellow bullet-sm mr-25"></span>
+                                                5-6 &mdash;Above Moderate
+                                            </div>
+                                            <div class="category-personal mr-1">
+                                                <span class="bullet bullet-warning bullet-sm mr-25"></span>
+                                                7-8 &mdash;Severe
+                                            </div>
+                                            <div class="category-others">
+                                                <span class="bullet bullet-danger bullet-sm mr-25"></span>
+                                                9-10 &mdash;Worst
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-4 pb-1">
+                                        <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="2">
+                                            Previous
+                                        </button>
+
+                                        <button type="button" class="btn btn-next btn-primary waves-effect waves-light white right" data-tabs="4">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="triage-prescriptions" role="tabpanel" aria-labelledby="account-pill-connections" aria-expanded="false">
+                                    <div class="triage-header">
+                                        <h4 class="card-title d-inline-block">Orders Dispensing</h4>
+                                        <button id="btn-context-menu" type="button" class="btn btn-sm right bg-gradient-info mr-1 waves-effect waves-light">Add <i class="fa fa-caret-down"></i></button>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-content">
+                                                    <div class="table-responsive mt-1">
+                                                        <table class="table table-hover-animation mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>ORDER</th>
+                                                                    <th>STATUS</th>
+                                                                    <th>PROVIDER</th>
+                                                                    <th>DESCRIPTION</th>
+                                                                    <th>CATEGORY</th>
+                                                                    <th>START DATE</th>
+                                                                    <th>ACTIONS</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>#879985</td>
+                                                                    <td><i class="fa fa-circle font-small-3 text-success mr-50"></i>Issued</td>
+                                                                    <td class="p-1">
+                                                                        <ul class="list-unstyled users-list m-0  d-flex align-items-center">
+                                                                            <li data-toggle="tooltip" data-popup="tooltip-custom" data-placement="bottom" data-original-title="Jane Maina" class="avatar pull-up">
+                                                                                <img class="media-object rounded-circle" src="~/images/avatar/lilly-051.jpg" alt="Avatar" height="30" width="30">
+                                                                            </li>
+                                                                        </ul>
+                                                                    </td>
+                                                                    <td>Anniston, Alabama</td>
+                                                                    <td>PHARMA</td>
+                                                                    <td>140.00</td>
+                                                                    <td class="text-center">
+                                                                        <a class="pointer primary"><i class="feather icon-edit-1 td-action"></i></a>
+                                                                        <a class="pointer danger"><i class="feather icon-trash-2 td-action"></i></a>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>#156897</td>
+                                                                    <td><i class="fa fa-circle font-small-3 text-warning mr-50"></i>Pending</td>
+                                                                    <td class="p-1">
+                                                                        <ul class="list-unstyled users-list m-0  d-flex align-items-center">
+                                                                            <li data-toggle="tooltip" data-popup="tooltip-custom" data-placement="bottom" data-original-title="Me" class="avatar pull-up">
+                                                                                <img class="media-object rounded-circle" src="~/images/avatar/avatar-male.jpg" alt="Avatar" height="30" width="30">
+                                                                            </li>
+                                                                            <li data-toggle="tooltip" data-popup="tooltip-custom" data-placement="bottom" data-original-title="Lilian Ng'ang'a" class="avatar pull-up">
+                                                                                <img class="media-object rounded-circle" src="~/images/avatar/avatar-jane-098.jpg" alt="Avatar" height="30" width="30">
+                                                                            </li>
+                                                                        </ul>
+                                                                    </td>
+                                                                    <td>Cordova, Alaska</td>
+                                                                    <td>NON-PHARMA</td>
+                                                                    <td>200.00</td>
+                                                                    <td class="text-center">
+                                                                        <a class="pointer primary"><i class="feather icon-edit-1 td-action"></i></a>
+                                                                        <a class="pointer danger"><i class="feather icon-trash-2 td-action"></i></a>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>#245689</td>
+                                                                    <td><i class="fa fa-circle font-small-3 text-danger mr-50"></i>Canceled</td>
+                                                                    <td class="p-1 pl-2">N/A</td>
+                                                                    <td>Clifton, Arizona</td>
+                                                                    <td>PROCEDURE</td>
+                                                                    <td>0.00</td>
+                                                                    <td class="text-center">
+                                                                        <a class="pointer primary"><i class="feather icon-edit-1 td-action"></i></a>
+                                                                        <a class="pointer danger"><i class="feather icon-trash-2 td-action"></i></a>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-4 pb-1">
+                                        <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="3">
+                                            Previous
+                                        </button>
+
+                                        <button type="button" class="btn btn-next btn-primary waves-effect waves-light white right" data-tabs="5">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="account-vertical-notifications" role="tabpanel" aria-labelledby="account-pill-notifications" aria-expanded="false">
+                                    <div class="triage-header">
+                                        <h4 class="card-title">Send To</h4>
+                                    </div>
+
+                                    <div class="row">
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="SendTo_Room_Type_Id">Send To</label>
+                                            @Html.DropDownListFor(model => model.SendTo.Room.Type.Id, Model.Rooms, new { @class = "form-control" })
+                                            <div class="form-control-position">
+                                                <i class="feather icon-smartphone"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="SendTo_Room_Id">Send To</label>
+                                            @Html.DropDownListFor(model => model.SendTo.Room.Id, Model.Types, new { @class = "form-control" })
+                                            <div class="form-control-position">
+                                                <i class="feather icon-more-vertical"></i>
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
+                                            <label for="SendTo_Room_Id">Send To</label>
+                                            @Html.DropDownListFor(model => model.SendTo.Priority.Id, Model.Priority, new { @class = "form-control" })
+                                            <div class="form-control-position">
+                                                <i class="feather icon-alert-circle"></i>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="triage-header">
+                                        <h4 class="card-title">Nursing Notes</h4>
+                                    </div>
+
+                                    <div class="row">
+                                        <fieldset class="col-12 form-group has-icon-left input-divider-left">
+                                            <label for="Triage_Notes">Nursing Notes</label>
+                                            @Html.TextAreaFor(model => model.Triage.Notes, new { @class = "form-control validate", placeholder = "Nursing Notes" })
+                                            <div class="form-control-position">
+                                                <i class="fa fa-sticky-note-o"></i>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+
+                                    <div class="pt-4 pb-1">
+                                        <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="4">
+                                            Previous
+                                        </button>
+
+                                        <button type="submit" class="btn btn-finish btn-primary waves-effect waves-light white right">
+                                            <i class="feather icon-save"></i>  Finish
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @Html.HiddenFor(model => model.Queue.Id)
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- account setting page end -->
+</div>
