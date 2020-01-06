@@ -147,8 +147,66 @@ function validateTriageForm(){
   if (jq('#SendTo_Room_Id').val() == ""){
     toastr.error('Kindly specify room to send patient', 'Validation');
     return false;
-  }
+    }
 
-  toastr.success('Saving Triage details..', 'Triage', { "timeOut": 0, "closeButton": true });
-  return true;
+    //validate numeric or empty form values 
+
+    var temp = jq('#Triage_Temparature_Value').val();
+    var systolic = jq('#Triage_BpSystolic_Value').val();
+    var diastolic = jq('#Triage_BpDiastolic_Value').val();
+    var respiratory_rate = jq('#Triage_RespiratoryRate_Value').val();
+    var pulse_rate = jq('#Triage_PulseRate_Value').val();
+    var oxygen_saturation = jq('#Triage_OxygenSaturation_Value').val();
+    var weight = jq('#Triage_Weight_Value').val();
+    var height = jq('#Triage_Height_Value').val();
+    var bmi = jq('#Triage_BMI_Value').val();
+    var muac = jq('#Triage_MUAC_Value').val();
+    var chest = jq('#Triage_Chest_Value').val();
+    var abdominal = jq('#Triage_Abdominal_Value').val();
+    //var situation = jq('#Triage_Situation_Value').val;
+    //var background = jq('#Triage_Background_Value').val;
+    //var assessment = jq('#Triage_Assessment_Value').val;
+    //var recommendation = jq('#Triage_Recommendation_Value').val;
+    //var notes = jq('#Triage_Notes').val;
+   
+    if (!temp == "" && isNaN(parseInt(temp))) {
+        toastr.error('Temp value should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!systolic == "" && isNaN(parseInt(systolic))) {
+        toastr.error('Systolic Blood Pressure value should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!diastolic == "" && isNaN(diastolic)) {
+        toastr.error('Diastolic Blood Pressure value should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!respiratory_rate == "" && isNaN(parseInt(respiratory_rate))) {
+        toastr.error('Respiratory Rate should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!pulse_rate == "" && isNaN(parseInt(pulse_rate))) {
+        toastr.error('Pulse Rate should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!oxygen_saturation == "" && isNaN(parseInt(oxygen_saturation))) {
+        toastr.error('Oxygen Saturation value should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!weight == "" && isNaN(parseInt(weight))) {
+        toastr.error('Weight value should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!height == "" && isNaN(parseInt(height))) {
+        toastr.error('Height value should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!bmi == "" && isNaN(parseInt(bmi))) {
+        toastr.error('BMI value should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!muac == "" && isNaN(parseInt(muac))) {
+        toastr.error('MUAC value should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!chest == "" && isNaN(parseInt(chest))) {
+        toastr.error('Chest Circumference value should be Numeric or Empty', 'Validation');
+        return false;
+    } else if (!abdominal == "" && isNaN(parseInt(abdominal))) {
+        toastr.error('Abdominal Circumference value should be Numeric or Empty', 'Validation');
+        return false;
+    } else {
+        toastr.success('Saving Triage details..', 'Triage', { "timeOut": 0, "closeButton": true });
+        return true;
+    }
 }
