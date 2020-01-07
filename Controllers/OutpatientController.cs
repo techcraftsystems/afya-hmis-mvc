@@ -36,8 +36,7 @@ namespace AfyaHMIS.Controllers
         public IActionResult TriageQueue(OutpatientQueueViewModel model, string date = "",string error = "") {
             model.Types = ICoreService.GetRoomsIEnumerable(new RoomType { Id = Constants.ROOM_TRIAGE });
 
-            var queueDate = DateTime.Now;
-
+            DateTime queueDate = DateTime.Now;
             string room = HttpContext.Request.Cookies["triage.room"];
             if (string.IsNullOrEmpty(room) && model.Types.Count > 0) {
                 room = model.Types[0].Value;
@@ -109,7 +108,13 @@ namespace AfyaHMIS.Controllers
 
         [Route("/outpatient/doctor")]
         public IActionResult Doctor(int qid, string pt, OutpatientDoctorViewVModel model) {
-            //Validate the QueueID isn't processed and that it's valid(not closed) for the selected room
+            model.Patient = IPatientService.GetPatient(pt);
+            model.Queue = IOutpatientService.GetQueue(qid);
+ 
+            if (!model.Patient.Id.Equals(model.Queue.Visit.Patient.Id))            {
+                return LocalRedirect("/outpatient/triage.queue?error=1011");
+            }
+
             return View(model);
         }
 

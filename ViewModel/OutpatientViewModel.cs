@@ -53,9 +53,13 @@ namespace AfyaHMIS.ViewModel
         }
     }
 
-    public class OutpatientDoctorViewVModel
-    {
+    public class OutpatientDoctorViewVModel {
+        public Patient Patient { get; set; }
+        public Queues Queue { get; set; }
+
         public OutpatientDoctorViewVModel() {
+            Patient = new Patient();
+            Queue = new Queues();
         }
     }
 }
