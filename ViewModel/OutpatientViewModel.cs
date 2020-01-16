@@ -62,4 +62,8 @@ namespace AfyaHMIS.ViewModel
             Queue = new Queues();
         }
     }
+
+    public class OutpatientProceduresViewVModel {
+
+    }
 }

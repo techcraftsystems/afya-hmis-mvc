@@ -8,6 +8,7 @@
         //ROOMS
         public const long ROOM_TRIAGE = 1;
         public const long ROOM_OPD = 2;
+        public const long ROOM_PROCEDURE = 6;
 
         //DEPTS
         public const long DEPT_REGISTRATION = 1;

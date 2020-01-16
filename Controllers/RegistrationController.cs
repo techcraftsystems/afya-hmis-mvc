@@ -93,6 +93,12 @@ namespace AfyaHMIS.Controllers
             return View(model);
         }
 
+        [Route("/registration/enquire")]
+        public IActionResult Enquire()
+        {
+            return View();
+        }
+
         [Route("/patients/{uuid}")]
         public IActionResult PatientsView(string uuid, RegistrationPateintsViewModel model)
         {

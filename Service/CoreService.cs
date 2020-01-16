@@ -65,7 +65,7 @@ namespace AfyaHMIS.Service
             if (!string.IsNullOrEmpty(filter))
                 query += conn.GetQueryString(filter, "rm_room+'-'+rt_type+'-'+bs_service+'-'+CAST(bs_amount AS NVARCHAR)", "", true, false);
 
-            SqlDataReader dr = conn.SqlServerConnect("SELECT rm_idnt, rm_void, rm_room, rm_concept, rt_idnt, rt_void, rt_concept, rt_type, bs_idnt, bs_code, bs_concept, bs_service, bs_amount, bs_description FROM Rooms INNER JOIN RoomType ON rm_type=rt_idnt INNER JOIN BillableService ON rm_service=bs_idnt " + query);
+            SqlDataReader dr = conn.SqlServerConnect("SELECT rm_idnt, rm_void, rm_room, rm_concept, rt_idnt, rt_void, rt_concept, rt_type, ISNULL(bs_idnt,0), bs_code, ISNULL(bs_concept,0), bs_service, ISNULL(bs_amount,0), bs_description FROM Rooms INNER JOIN RoomType ON rm_type=rt_idnt LEFT OUTER JOIN BillableService ON rm_service=bs_idnt " + query);
             if (dr.HasRows) {
                 while (dr.Read()) {
                     rooms.Add(new Room {

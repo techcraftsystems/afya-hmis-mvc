@@ -118,6 +118,59 @@ namespace AfyaHMIS.Controllers
             return View(model);
         }
 
+        [Route("/outpatient/accident-and-emergency")]
+        public IActionResult Emergency()
+        {
+            return View();
+        }
+
+        [Route("/outpatient/nurses-bay")]
+        public IActionResult NurseBay()
+        {
+            return View();
+        }
+
+        [Route("/outpatient/doctors-workbench")]
+        public IActionResult Workbench()
+        {
+            return View();
+        }
+
+        [Route("/outpatient/physiotherapy")]
+        public IActionResult Physiotherapy()
+        {
+            return View();
+        }
+
+        [Route("/outpatient/procedures")]
+        public IActionResult Procedures(OutpatientProceduresViewVModel model) {
+            return View(model);
+        }
+
+        [Route("/outpatient/procedures.queue")]
+        public IActionResult ProceduresQueue(OutpatientQueueViewModel model)
+        {
+            model.Types = ICoreService.GetRoomsIEnumerable(new RoomType { Id = Constants.ROOM_PROCEDURE });
+
+            string room = HttpContext.Request.Cookies["procedures.room"];
+            if (string.IsNullOrEmpty(room) && model.Types.Count > 0) {
+                room = model.Types[0].Value;
+                CookieOptions opts = new CookieOptions {
+                    Expires = DateTime.Now.AddMonths(3),
+                    Secure = true
+                };
+                HttpContext.Response.Cookies.Append("procedures.room", room, opts);
+            }
+            else if (string.IsNullOrEmpty(room)) {
+                room = "0";
+            }
+
+            model.Room = ICoreService.GetRoom(Convert.ToInt64(room));
+            model.Queue = IOutpatientService.GetQueue(model.Room, DateTime.Now);
+
+            return View(model);
+        }
+
         [HttpPost]
         public IActionResult SaveTriage() {
             Users user = new Users { Id = long.Parse(HttpContext.User.FindFirst(ClaimTypes.Actor).Value) };

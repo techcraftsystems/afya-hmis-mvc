@@ -30,7 +30,7 @@
     <hr/>
     <div class="home-icons row">
         @foreach (var module in Model.Modules) {
-            <a class="module-icon col-1 mt-1 text-center @(module.Class)" href="@(module.Urls)" data-idnt="@(module.Id)">
+            <a class="module-icon col-1 mt-1 mb-1 text-center @(module.Class)" href="@(module.Urls)" data-idnt="@(module.Id)">
                 <img src="~/images/icons/@(module.Icon)" />
                 <br/>
                 <span>@module.Name</span>

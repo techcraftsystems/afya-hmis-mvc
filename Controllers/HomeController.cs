@@ -26,7 +26,17 @@ namespace AfyaHMIS.Controllers
             return View(model);
         }
 
-        public IActionResult Privacy()
+        public IActionResult Privacy() {
+            return View();
+        }
+
+        [Route("/notifications")]
+        public IActionResult Notifications() {
+            return View();
+        }
+
+        [Route("/appointments")]
+        public IActionResult Appointments()
         {
             return View();
         }
