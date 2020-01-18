@@ -24,5 +24,9 @@
     <Folder Include="Views\Billing\" />
     <Folder Include="Views\Outpatient\" />
     <Folder Include="Models\Outpatients\" />
+    <Folder Include="Views\BloodBank\" />
+    <Folder Include="Views\Pharmacy\" />
+    <Folder Include="Views\Inventory\" />
+    <Folder Include="Views\Reports\" />
   </ItemGroup>
 </Project>

@@ -30,6 +30,11 @@ namespace AfyaHMIS.Controllers
             IPatientService = patient;
         }
 
+        [Route("/billing/")]
+        public IActionResult Index() {
+            return View();
+        }
+
         [Route("/billing/cashier/")]
         public IActionResult Cashier(BillingCashierViewModel model, string error = "") {
             model.Bills = IFinanceService.GetBillingCashierQueue(DateTime.Now, DateTime.Now, new BillingFlag());
