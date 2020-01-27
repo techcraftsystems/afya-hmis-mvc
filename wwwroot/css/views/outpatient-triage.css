@@ -4,6 +4,9 @@
   font-weight: bold;
   padding-left: 1.2em!important;
 }
+.nav-pills .nav-link.nav-triage.active {
+    color: wheat !important;
+}
 .nav.nav-pills {
   border-right: 1px solid rgba(0,0,0,.05);
 }

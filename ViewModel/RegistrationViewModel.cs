@@ -52,8 +52,7 @@ namespace AfyaHMIS.ViewModel
         public IEnumerable<SelectListItem> Referrals { get; set; }
         public IEnumerable<SelectListItem> MedicoLegal { get; set; }
 
-        public RegistrationVisitViewModel()
-        {
+        public RegistrationVisitViewModel() {
             Visit = new Visit();
             Bill = new Bills();
             Item = new BillsItem();

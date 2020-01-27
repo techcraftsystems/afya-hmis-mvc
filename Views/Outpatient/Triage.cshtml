@@ -13,8 +13,8 @@
 <link rel="stylesheet newest" type="text/css" href="~/css/views/outpatient-triage.css">
 
 <script>
-    var qid = @Model.Queue.Id;
-    var sid = @Model.Queue.SeenBy.Id;
+    var qid = @(Model.Queue == null ? 0 : Model.Queue.Id);
+    var sid = @(Model.Queue == null ? 1 : Model.Queue.SeenBy.Id);
 </script>
 <script src="~/vendors/js/extensions/wNumb.js"></script>
 <script src="~/vendors/js/extensions/nouislider.min.js"></script>
@@ -147,7 +147,7 @@
                                         </fieldset>
 
                                         <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
-                                            <label for="Patient_Person_Name">Respiratory Rate</label>
+                                            <label for="Patient_Person_Name">Oxygen Saturation</label>
                                             @Html.TextBoxFor(model => model.Triage.OxygenSaturation.Value, new { @class = "form-control validate", placeholder = "Oxygen Saturation" })
                                             <div class="form-control-position">
                                                 <i class="fa fa-adjust"></i>
@@ -200,7 +200,8 @@
                                             </div>
                                         </fieldset>
 
-                                        @if (Model.Patient.GetAgeInYears() > 12) {
+                                        @if (Model.Patient.GetAgeInYears() > 12)
+                                        {
                                             <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
                                                 <label for="Triage_BMI_Value">B.M.I</label>
                                                 @Html.TextBoxFor(model => model.Triage.BMI.Value, new { @class = "form-control validate", placeholder = "BMI" })
@@ -501,11 +502,11 @@
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="account-vertical-notifications" role="tabpanel" aria-labelledby="account-pill-notifications" aria-expanded="false">
-                                    <div class="triage-header">
+                                    <div class="triage-header @(Model.AllowSendTo ? "" : "hidden")">
                                         <h4 class="card-title">Send To</h4>
                                     </div>
 
-                                    <div class="row">
+                                    <div class="row @(Model.AllowSendTo ? "" : "hidden")">
                                         <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left input-divider-left">
                                             <label for="SendTo_Room_Type_Id">Send To</label>
                                             @Html.DropDownListFor(model => model.SendTo.Room.Type.Id, Model.Rooms, new { @class = "form-control" })
@@ -560,6 +561,11 @@
                         </div>
 
                         @Html.HiddenFor(model => model.Queue.Id)
+                        @Html.HiddenFor(model => model.RefQs.Id)
+                        @Html.HiddenFor(model => model.AllowSendTo)
+                        @Html.HiddenFor(model => model.ReturnUrls)
+                        @Html.HiddenFor(model => model.Patient.Id)
+                        @Html.HiddenFor(model => model.Patient.Uuid)
                     }
                 </div>
             </div>

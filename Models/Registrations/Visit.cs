@@ -15,12 +15,12 @@ namespace AfyaHMIS.Models.Registrations
         public string SchemeNumber { get; set; }
         public string Barcode { get; set; }
         public Concept MedicoLegal { get; set; }
+        public string MedicoLegalNotes { get; set; }
         public DateTime CreatedOn { get; set; }
         public Users CreatedBy { get; set; }
         public string Notes { get; set; }
 
-        public Visit()
-        {
+        public Visit() {
             Id = 0;
             Patient = new Patient();
             Type = new VisitType();
@@ -28,13 +28,13 @@ namespace AfyaHMIS.Models.Registrations
             SchemeNumber = "";
             Barcode = "";
             MedicoLegal = new Concept();
+            MedicoLegalNotes = "";
             CreatedOn = DateTime.Now;
             CreatedBy = new Users();
             Notes = "";
         }
 
-        public Visit Save()
-        {
+        public Visit Save() {
             return new PatientService().SaveVisit(this);
         }
     }

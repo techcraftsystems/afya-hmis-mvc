@@ -16,7 +16,8 @@ namespace AfyaHMIS.Service
     public class OutpatientService : IOutpatientService
     {
         public Queues GetQueue(long id) {
-            return GetQueue(null, null, " qs_idnt=" + id)[0];
+            var queues = GetQueue(null, null, " qs_idnt=" + id);
+            return queues.Count.Equals(0) ? null : queues[0];
         }
 
         public List<Queues> GetQueue(Room room, DateTime? date, string conditions = "") {
@@ -86,6 +87,93 @@ namespace AfyaHMIS.Service
             }
 
             return queue;
+        }
+
+        public Triage GetTriage(long id) {
+            var triage = GetTriage(null, null, "", "WHERE tg_idnt=" + id);
+            return triage.Count.Equals(0) ? null : triage[0];
+        }
+
+        public List<Triage> GetTriage(Patient patient, Queues queue, string additional = "", string condition = "")
+        {
+            List<Triage> triages = new List<Triage>();
+            string query = "";
+
+            if (patient != null)
+                query += "WHERE vst_patient=" + patient.Id;
+            if (queue != null)
+                query += (string.IsNullOrEmpty(query) ? "WHERE " : " AND ") + "tg_queue=" + queue.Id;
+            if (!string.IsNullOrEmpty(additional))
+                query += (string.IsNullOrEmpty(query) ? "WHERE " : " AND ") + additional;
+            if (!string.IsNullOrEmpty(condition))
+                query = condition;
+
+            SqlServerConnection conn = new SqlServerConnection();
+            SqlDataReader dr = conn.SqlServerConnect("SELECT tg_idnt, tg_temp, tg_systolic_bp, tg_diastolic_bp, tg_respiratory_rate, tg_pulse_rate, tg_oxygen_saturation, tg_weight, th_height, tg_bmi, tg_muac, tg_chest, tg_abdominal, tg_pain, tg_situation, tg_background, tg_assessment, tg_recommendation, tg_notes, tg_mobility, mb.ct_name, tg_trauma, tr.ct_name, tg_avpu, av.ct_name, usr_idnt, usr_uuid, usr_name, qs_idnt, qs_room, vst_idnt, vst_patient, vst_type FROM Triage INNER JOIN Queues ON tg_queue=qs_idnt INNER JOIN Visit ON tg_visit=vst_idnt INNER JOIN Users ON tg_created_by=usr_idnt LEFT OUTER JOIN Concept mb ON mb.ct_idnt=tg_mobility LEFT OUTER JOIN Concept tr ON tr.ct_idnt=tg_trauma LEFT OUTER JOIN Concept av ON av.ct_idnt=tg_trauma " + query + " ORDER BY tg_created_on DESC");
+            if (dr.HasRows) {
+                while (dr.Read()) {
+                    triages.Add(new Triage {
+                        Id = Convert.ToInt64(dr[0]),
+                        Temparature = new Vitals { Value = dr[1].ToString().Trim() },
+                        BpSystolic = new Vitals { Value = dr[2].ToString().Trim() },
+                        BpDiastolic = new Vitals { Value = dr[3].ToString().Trim() },
+                        RespiratoryRate = new Vitals { Value = dr[4].ToString().Trim() },
+                        PulseRate = new Vitals { Value = dr[5].ToString().Trim() },
+                        OxygenSaturation = new Vitals { Value = dr[6].ToString().Trim() },
+
+                        Weight = new Vitals { Value = dr[7].ToString().Trim() },
+                        Height = new Vitals { Value = dr[8].ToString().Trim() },
+                        BMI = new Vitals { Value = dr[9].ToString().Trim() },
+                        MUAC = new Vitals { Value = dr[10].ToString().Trim() },
+                        Chest = new Vitals { Value = dr[11].ToString().Trim() },
+                        Abdominal = new Vitals { Value = dr[12].ToString().Trim() },
+                        PainScale = new Vitals { Value = dr[13].ToString().Trim() },
+
+                        Situation = new Vitals { Value = dr[14].ToString().Trim() },
+                        Background = new Vitals { Value = dr[15].ToString().Trim() },
+                        Assessment = new Vitals { Value = dr[16].ToString().Trim() },
+                        Recommendation = new Vitals { Value = dr[17].ToString().Trim() },
+
+                        Notes = dr[18].ToString().Trim(),
+
+                        Mobility = new Vitals { Units = dr[19].ToString().Trim(), Value = dr[20].ToString().Trim() },
+                        Trauma = new Vitals { Units = dr[21].ToString().Trim(), Value = dr[22].ToString().Trim() },
+                        AVPU = new Vitals { Units = dr[23].ToString().Trim(), Value = dr[24].ToString().Trim() },
+
+                        CreatedBy = new Users {
+                            Id = Convert.ToInt64(dr[25]),
+                            Uuid = dr[26].ToString(),
+                            Name = dr[27].ToString()
+                        },
+                        Queue = new Queues {
+                            Id = Convert.ToInt64(dr[28]),
+                            Room = new Room { Id = Convert.ToInt64(dr[29]) },
+                            Visit = new Visit {
+                                Id = Convert.ToInt64(dr[30]),
+                                Patient = new Patient { Id = Convert.ToInt64(dr[31]) },
+                                Type = new VisitType { Id = Convert.ToInt64(dr[32]) }
+                            },  
+                        }
+                    });
+                }
+            } return triages;
+        }
+
+        public List<Triage> GetTriageList(Patient p) {
+            List<Triage> triages = new List<Triage>();
+
+            SqlServerConnection conn = new SqlServerConnection();
+            SqlDataReader dr = conn.SqlServerConnect("DECLARE @p INT=" + p.Id + "; SELECT tg_idnt, tg_created_on, tg_queue, tg_visit FROM Triage INNER JOIN Visit ON vst_idnt=tg_visit WHERE vst_patient=@p ORDER BY tg_created_on DESC");
+            if (dr.HasRows) {
+                while (dr.Read()) {
+                    triages.Add(new Triage {
+                        Id = Convert.ToInt64(dr[0]),
+                        CreatedOn = Convert.ToDateTime(dr[1]),
+                        Queue = new Queues { Id = Convert.ToInt64(dr[2]) },
+                        Visit = new Visit { Id = Convert.ToInt64(dr[3]) }
+                    });
+                }
+            } return triages;
         }
 
         public Triage SaveTriage(Triage triage) {

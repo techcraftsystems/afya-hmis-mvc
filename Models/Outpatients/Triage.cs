@@ -8,6 +8,7 @@ namespace AfyaHMIS.Models.Outpatients
     public class Triage
     {
         public long Id { get; set; }
+        public bool Current { get; set; }
         public string Date { get; set; }
         public Queues Queue { get; set; }
         public Visit Visit { get; set; }
@@ -44,6 +45,7 @@ namespace AfyaHMIS.Models.Outpatients
         
         public Triage() {
             Id = 0;
+            Current = false;
             Queue = new Queues();
             Visit = new Visit();
 

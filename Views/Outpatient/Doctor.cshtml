@@ -1,4 +1,452 @@
 ﻿@model AfyaHMIS.ViewModel.OutpatientDoctorViewVModel;
 @{
-    ViewData["Title"] = "Doctor View";
+    ViewData["Title"] = "Doctor";
+    int count = 0;
 }
+
+<link rel="stylesheet" type="text/css" href="~/vendors/css/extensions/nouislider.min.css">
+<link rel="stylesheet" type="text/css" href="~/css/plugins/extensions/noui-slider.css">
+<link rel="stylesheet" type="text/css" href="~/css/core/colors/palette-noui.css">
+<link rel="stylesheet" type="text/css" href="~/vendors/css/extensions/jquery.contextMenu.min.css">
+<link rel="stylesheet" type="text/css" href="~/vendors/css/extensions/shepherd-theme-default.css">
+<link rel="stylesheet" type="text/css" href="~/css/plugins/extensions/context-menu.css">
+<link rel="stylesheet" type="text/css" href="~/css/plugins/tour/tour.css">
+<link rel="stylesheet newest" type="text/css" href="~/css/views/outpatient-triage.css">
+
+<script>
+    var qid = @Model.Queue.Id;
+    var sid = @Model.Queue.SeenBy.Id;
+</script>
+<script src="~/vendors/js/extensions/wNumb.js"></script>
+<script src="~/vendors/js/extensions/nouislider.min.js"></script>
+<script src="~/vendors/js/extensions/jquery.contextMenu.min.js"></script>
+<script src="~/vendors/js/extensions/shepherd.min.js"></script>
+<script src="~/js/outpatient-doctor.view.js"></script>
+
+<div class="content-body">
+    <section id="basic-tabs-components">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card overflow-hidden">
+                    <div class="card-content">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- patient header -->
+                                <div class="col-12">
+                                    <div class="row pb-1" style="border-bottom: 1px solid #d9d9d9;">
+                                        <div class="users-view-image mr-1">
+                                            <img src="~/images/avatar/fever@(Model.Patient.Person.Gender == "f" ? "-1":"").png" class="users-avatar-shadow rounded mb-0 ml-1" alt="avatar" style="height:40px">
+                                        </div>
+                                        <div class="mt-0">
+                                            <div><span class="font-weight-bold">@(Model.Patient.Person.Name)</span> / @(Model.Patient.Person.Gender.Equals("m") ? "Male" : "Female") @(Model.Patient.GetAge())</div>
+                                            <div class="patient-idnt">Patient ID: @(Model.Patient.Identifier)</div>
+                                        </div>
+                                        <div class="mt-0 mr-1" style="position: absolute; right: 0">
+                                            <a class="btn btn-outline-info"><i class="feather icon-user-check"></i></a>
+                                            <a class="btn btn-outline-warning tour-pos"><i class="fa fa-bookmark-o"></i>EMR</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#opd-notes" aria-controls="home" role="tab" aria-selected="true">Notes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#opd-triage" aria-controls="profile" role="tab" aria-selected="false">Triage</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link disabled" id="about-tab" data-toggle="tab" href="#opd-investigations" aria-controls="about" role="tab" aria-selected="false">Investigations</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="opd-notes" aria-labelledby="home-tab" role="tabpanel">
+                                    <div class="card-title">Clinical Notes</div>
+                                    <p>Doctor updates of patient's condition to be updated here</p>
+                                    <hr />
+
+                                    <section id="page-account-settings">
+                                        <div class="row">
+                                            <!-- left menu section -->
+                                            <div class="col-md-3 col-lg-2 mb-2 mb-md-0 pl-0 pr-0">
+                                                <ul class="nav nav-pills nav-pills-custom flex-column mt-md-0 mt-1">
+                                                    <li class="nav-item">
+                                                        <a class="nav-link d-flex py-75 active" id="li-triage-vitals" data-toggle="pill" href="#triage-vitals" aria-expanded="true">
+                                                            <i class="feather icon-user mr-50 font-medium-3"></i>
+                                                            Signs &amp; Symptoms
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link d-flex py-75" id="li-triage-ews" data-toggle="pill" href="#triage-ews" aria-expanded="false">
+                                                            <i class="feather icon-clock mr-50 font-medium-3"></i>
+                                                            Illness History
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link d-flex py-75" id="account-pill-info" data-toggle="pill" href="#account-vertical-info" aria-expanded="false">
+                                                            <i class="fa fa-american-sign-language-interpreting mr-50 font-medium-3"></i>
+                                                            Physical Exams
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link d-flex py-75" id="account-pill-connections" data-toggle="pill" href="#account-vertical-connections" aria-expanded="false">
+                                                            <i class="feather icon-archive mr-50 font-medium-3"></i>
+                                                            Diagnosis
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link d-flex py-75" id="li-triage-prescriptions" data-toggle="pill" href="#triage-prescriptions" aria-expanded="false">
+                                                            <i class="feather icon-map mr-50 font-medium-3"></i>
+                                                            Procedures
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link d-flex py-75" id="account-pill-notifications" data-toggle="pill" href="#account-vertical-notifications" aria-expanded="false">
+                                                            <i class="fa fa-flask mr-50 font-medium-3"></i>
+                                                            Investigations
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link d-flex py-75" id="account-pill-notifications" data-toggle="pill" href="#account-vertical-notifications" aria-expanded="false">
+                                                            <i class="fa fa-medkit mr-50 font-medium-3"></i>
+                                                            Precriptions
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link d-flex py-75" id="account-pill-notifications" data-toggle="pill" href="#account-vertical-notifications" aria-expanded="false">
+                                                            <i class="fa fa-sticky-note-o mr-50 font-medium-3"></i>
+                                                            Doctor Notes
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link d-flex py-75" id="account-pill-notifications" data-toggle="pill" href="#account-vertical-notifications" aria-expanded="false">
+                                                            <i class="feather icon-rotate-cw mr-50 font-medium-3"></i>
+                                                            Outcomes
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="line-vs-tabs" style="left: 0px; width: 2px; height: 47px; transform: scaleX(1); top: 0px;"></span>
+                                            </div>
+                                            <!-- right content section -->
+                                            <div class="col-md-9 col-lg-10">
+                                                @using (Html.BeginForm("SaveDoctor", "Outpatient", FormMethod.Post, new { @class = "card-content", id = "triage-form", onsubmit = "return validateTriageForm()", autocomplete = "off" }))
+                                                {
+                                                    <div class="tab-content p-1">
+                                                        <div role="tabpanel" class="tab-pane active" id="triage-vitals" aria-labelledby="account-pill-general" aria-expanded="true">
+                                                            <div class="triage-header">
+                                                                <h4 class="card-title">Patient Vitals</h4>
+                                                            </div>
+
+                                                            <div class="d-flex flex-sm-row flex-column justify-content-end pt-1">
+                                                                <button type="button" class="btn btn-next btn-primary waves-effect waves-light white" data-tabs="1">
+                                                                    Next
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="tab-pane fade" id="triage-ews" role="tabpanel" aria-labelledby="account-pill-password" aria-expanded="false">
+                                                            <div class="triage-header">
+                                                                <h4 class="card-title">Early Warning Score</h4>
+                                                            </div>
+
+                                                            <div class="pt-1 pb-1">
+                                                                <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="0">
+                                                                    Previous
+                                                                </button>
+
+                                                                <button type="button" class="btn btn-next btn-primary waves-effect waves-light white right" data-tabs="2">
+                                                                    Next
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="tab-pane fade" id="account-vertical-info" role="tabpanel" aria-labelledby="account-pill-info" aria-expanded="false">
+                                                            <div class="triage-header">
+                                                                <h4 class="card-title">SBAR</h4>
+                                                            </div>
+
+                                                            <div class="pt-1 pb-1">
+                                                                <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="1">
+                                                                    Previous
+                                                                </button>
+
+                                                                <button type="button" class="btn btn-next btn-primary waves-effect waves-light white right" data-tabs="3">
+                                                                    Next
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="tab-pane fade" id="account-vertical-connections" role="tabpanel" aria-labelledby="account-pill-connections" aria-expanded="false">
+                                                            <div class="triage-header">
+                                                                <h4 class="card-title">Pain Scale</h4>
+                                                            </div>
+
+                                                            <div class="pt-4 pb-1">
+                                                                <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="2">
+                                                                    Previous
+                                                                </button>
+
+                                                                <button type="button" class="btn btn-next btn-primary waves-effect waves-light white right" data-tabs="4">
+                                                                    Next
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tab-pane fade" id="triage-prescriptions" role="tabpanel" aria-labelledby="account-pill-connections" aria-expanded="false">
+                                                            <div class="triage-header">
+                                                                <h4 class="card-title d-inline-block">Orders Dispensing</h4>
+                                                                <button id="btn-context-menu" type="button" class="btn btn-sm right bg-gradient-info mr-1 waves-effect waves-light">Add <i class="fa fa-caret-down"></i></button>
+                                                            </div>
+
+                                                            <div class="pt-4 pb-1">
+                                                                <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="3">
+                                                                    Previous
+                                                                </button>
+
+                                                                <button type="button" class="btn btn-next btn-primary waves-effect waves-light white right" data-tabs="5">
+                                                                    Next
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tab-pane fade" id="account-vertical-notifications" role="tabpanel" aria-labelledby="account-pill-notifications" aria-expanded="false">
+                                                            <div class="triage-header">
+                                                                <h4 class="card-title">Send To</h4>
+                                                            </div>
+
+                                                            <div class="pt-4 pb-1">
+                                                                <button type="button" class="btn btn-prev btn-outline-warning waves-effect waves-light" data-tabs="4">
+                                                                    Previous
+                                                                </button>
+
+                                                                <button type="submit" class="btn btn-finish btn-primary waves-effect waves-light white right">
+                                                                    <i class="feather icon-save"></i>  Finish
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    @Html.HiddenFor(model => model.Queue.Id)
+                                                }
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+
+                                <div class="tab-pane" id="opd-triage" aria-labelledby="profile-tab" role="tabpanel">
+                                    <div class="card-title">Triage History</div>
+                                    <a id="btn-context-menu" href="/outpatient/triage?pt=@(Model.Patient.Uuid)&refq=@(Model.Queue.Id)&redirect=outpatient/doctor" class="btn right bg-gradient-info mr-1 waves-effect waves-light" style="margin-top: -10px">Add <i class="fa fa-caret-down"></i></a>
+                                    <p>Review triage history of the patient as captured over time..</p>
+                                    <hr />
+
+                                    @if (!Model.Triage.Count.Equals(0))
+                                    {
+                                        <section id="stacked-pills">
+                                            <div class="row match-height">
+                                                <div class="col-sm-12">
+                                                    <div class="row">
+                                                        <div class="col-md-2 col-sm-12">
+                                                            <ul class="nav nav-pills nav-pill-danger flex-column pt-1 pb-3">
+                                                                @foreach (var t in Model.Triage)  {
+                                                                    count++;
+
+                                                                    <li class="nav-item">
+                                                                        <a class="nav-link nav-triage @(count == 1 ? "active" : "")" id="stacked-pills" data-toggle="pill" data-triage="@(t.Id)" href="#vertical-pills" aria-expanded="true">
+                                                                            <i class="feather icon-calendar"></i> @t.CreatedOn.ToString("dd/MM/yyyy HH:mm")
+                                                                        </a>
+                                                                    </li>
+                                                                }
+                                                            </ul>
+                                                        </div>
+                                                        <div class="col-md-10 col-sm-12">
+                                                            <div class="tab-content">
+                                                                <div role="tabpanel" class="tab-pane active" id="vertical-pills" aria-labelledby="stacked-pill-1" aria-expanded="true">
+                                                                    <table class="table table-hover-animation triage-details">
+                                                                        <thead class="thead-dark">
+                                                                            <tr>
+                                                                                <th scope="col" width="20%">VITAL</th>
+                                                                                <th scope="col" width="10%">RESULTS</th>
+                                                                                <th scope="col">NORMAL RANGE</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.Temparature.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>TEMPARATURE</td>
+                                                                                    <td>@Model.TData.Temparature.Value &#8451;</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.BpSystolic.Value) || !string.IsNullOrEmpty(@Model.TData.BpDiastolic.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>BLOOD PRESSURE</td>
+                                                                                    <td>@Model.TData.BpSystolic.Value / @Model.TData.BpDiastolic.Value</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.RespiratoryRate.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>RESPIRATORY RATE</td>
+                                                                                    <td>@Model.TData.RespiratoryRate.Value</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.PulseRate.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>PULSE RATE</td>
+                                                                                    <td>@Model.TData.PulseRate.Value</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.OxygenSaturation.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>OXYGEN SATURATION</td>
+                                                                                    <td>@Model.TData.OxygenSaturation.Value</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.Mobility.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>MOBILITY</td>
+                                                                                    <td>@Model.TData.Mobility.Value</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.Trauma.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>TRAUMA</td>
+                                                                                    <td>@Model.TData.Trauma.Value</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.AVPU.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>AVPU</td>
+                                                                                    <td>@Model.TData.AVPU.Value</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.Weight.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>WEIGHT</td>
+                                                                                    <td>@Model.TData.Weight.Value Kgs</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.Height.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>HEIGHT</td>
+                                                                                    <td>@Model.TData.Height.Value Cms</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.BMI.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>BMI</td>
+                                                                                    <td>@Model.TData.Height.Value</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.MUAC.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>MUAC</td>
+                                                                                    <td>@Model.TData.MUAC.Value Cms</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.Chest.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>CHEST CIRCUMFERENCE</td>
+                                                                                    <td>@Model.TData.Chest.Value Cms</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+
+                                                                            @if (!string.IsNullOrEmpty(@Model.TData.Abdominal.Value))
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>ABDOMINAL CIRCUMFERENCE</td>
+                                                                                    <td>@Model.TData.Abdominal.Value Cms</td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            }
+                                                                        </tbody>
+                                                                    </table>
+
+                                                                    <table class="table table-hover-animation mb-0 sbar-details">
+                                                                        <thead class="thead-dark">
+                                                                            <tr>
+                                                                                <th scope="col" width="20%">SBAR</th>
+                                                                                <th scope="col">NOTES</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td>SITUATION</td>
+                                                                                <td>@(string.IsNullOrEmpty(Model.TData.Situation.Value) ? "N/A" : Model.TData.Situation.Value)</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>BACKGROUND</td>
+                                                                                <td>@(string.IsNullOrEmpty(Model.TData.Background.Value) ? "N/A" : Model.TData.Background.Value)</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>ASSESSMENT</td>
+                                                                                <td>@(string.IsNullOrEmpty(Model.TData.Assessment.Value) ? "N/A" : Model.TData.Assessment.Value)</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>RECOMMENDATION</td>
+                                                                                <td>@(string.IsNullOrEmpty(Model.TData.Recommendation.Value) ? "N/A" : Model.TData.Recommendation.Value)</td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    }
+                                    else {
+                                        <div>No Triage Details foind. <a href="/outpatient/trige?pt=@(Model.Patient.Uuid)&refq=@(Model.Queue.Id)&redirect=outpatient/doctor">Click here</a> to Add</div>
+                                    }
+                                </div>
+                                <div class="tab-pane" id="opd-investigations" aria-labelledby="about-tab" role="tabpanel">
+                                    <p>
+                                        Investigations here
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- account setting page end -->
+</div>

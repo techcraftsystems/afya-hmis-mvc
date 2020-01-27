@@ -63,12 +63,20 @@ namespace AfyaHMIS.Controllers
         }
 
         [Route("/outpatient/triage")]
-        public IActionResult Triage(int qid, string pt, OutpatientTriageViewVModel model) {
+        public IActionResult Triage(int qid, int refq, string pt, string redirect, OutpatientTriageViewVModel model) {
             model.Patient = IPatientService.GetPatient(pt);
             model.Queue = IOutpatientService.GetQueue(qid);
+            model.RefQs = new Queues { Id = refq };
+            model.ReturnUrls = redirect;
 
-            if (!model.Patient.Id.Equals(model.Queue.Visit.Patient.Id)) {
+            if (model.Queue != null && !model.Patient.Id.Equals(model.Queue.Visit.Patient.Id)) {
                 return LocalRedirect("/outpatient/triage.queue?error=1011");
+            }
+            if (model.Queue == null && model.RefQs.Id.Equals(0)) {
+                return LocalRedirect("/outpatient/triage.queue?error=1011");
+            }
+            if (model.Queue == null) {
+                 model.AllowSendTo = false;
             }
 
             model.MobilityOpts = IConceptService.GetConceptAnswersIEnumerable(new Concept { Id = Constants.MOBILITY });
@@ -110,8 +118,13 @@ namespace AfyaHMIS.Controllers
         public IActionResult Doctor(int qid, string pt, OutpatientDoctorViewVModel model) {
             model.Patient = IPatientService.GetPatient(pt);
             model.Queue = IOutpatientService.GetQueue(qid);
- 
-            if (!model.Patient.Id.Equals(model.Queue.Visit.Patient.Id))            {
+            model.Triage = IOutpatientService.GetTriageList(model.Patient);
+
+            if (!model.Triage.Count.Equals(0)) {
+                model.TData = IOutpatientService.GetTriage(model.Triage[0].Id);
+            }
+            
+            if (!model.Patient.Id.Equals(model.Queue.Visit.Patient.Id)) {
                 return LocalRedirect("/outpatient/triage.queue?error=1011");
             }
 
@@ -176,6 +189,16 @@ namespace AfyaHMIS.Controllers
             Users user = new Users { Id = long.Parse(HttpContext.User.FindFirst(ClaimTypes.Actor).Value) };
             Queues queue = IOutpatientService.GetQueue(TriageModel.Queue.Id);
 
+            if (queue == null) {
+                var q = IOutpatientService.GetQueue(TriageModel.RefQs.Id);
+                queue = new Queues {
+                    Visit = q.Visit,
+                    Room = q.Room,
+                    CreatedBy = user,
+                    Notes = "Doctor Update"
+                }.Save();
+            }
+
             Triage triage = TriageModel.Triage;
             triage.Visit = queue.Visit;
             triage.Queue = queue;
@@ -205,16 +228,26 @@ namespace AfyaHMIS.Controllers
             }
             queue.CompleteEncounter();
 
-            var dest = TriageModel.SendTo;
-            dest.Visit = queue.Visit;
-            dest.CreatedBy = user;
-            dest.Save();
+
+            //Self-add (by doctor/etc) should not have
+            if (TriageModel.AllowSendTo) {
+                var dest = TriageModel.SendTo;
+                dest.Visit = queue.Visit;
+                dest.CreatedBy = user;
+                dest.Save();
+            }
+            if (!string.IsNullOrEmpty(TriageModel.ReturnUrls))
+                return LocalRedirect("/" + TriageModel.ReturnUrls + "?qid=" + TriageModel.RefQs.Id + "&pt=" + TriageModel.Patient.Uuid);
 
             return LocalRedirect("/outpatient/triage.queue" + (queue.CreatedOn.Date.Equals(DateTime.Now.Date) ? "" : "?date=" + TriageModel.Queue.Date));
         }
 
         public JsonResult GetOutpatientQueue(int room, string date) {
             return Json(IOutpatientService.GetQueue(new Room { Id = room }, DateTime.ParseExact(date, "dd/MM/yyyy", CultureInfo.InvariantCulture)));
+        }
+
+        public JsonResult GetTriageDetails(long idnt) {
+            return Json(IOutpatientService.GetTriage(idnt));
         }
 
         public IActionResult SetCookie(string value, string queue) {

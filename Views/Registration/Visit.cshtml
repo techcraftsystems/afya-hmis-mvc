@@ -84,6 +84,15 @@
                                     </div>
                                 </fieldset>
 
+                            </div>
+                        </div>
+
+                        <div class="card-header pt-0">
+                            <h4 class="card-title">Medico Legal Case</h4>
+                        </div>
+
+                        <div class="card-content">
+                            <div class="card-body card-dashboard pt-1 row">
                                 <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
                                     <label for="Patient_Person_Name">Medico Legal Case</label>
                                     @Html.DropDownListFor(model => model.Visit.MedicoLegal.Id, Model.MedicoLegal, "NOT MEDICO LEGAL", new { @class = "form-control select2" })
@@ -91,14 +100,22 @@
                                         <i class="feather icon-percent"></i>
                                     </div>
                                 </fieldset>
+
+                                <fieldset class="col-12 col-sm-6 col-lg-8 form-group has-icon-left">
+                                    <label for="Patient_Person_Name">Barcode</label>
+                                    @Html.TextBoxFor(model => model.Visit.MedicoLegalNotes, new { @class = "form-control validate", placeholder = "Legal Case Notes" })
+                                    <div class="form-control-position">
+                                        <i class="fa fa-sticky-note-o"></i>
+                                    </div>
+                                </fieldset>
                             </div>
                         </div>
 
                         <div class="card-header pt-0">
-                            <h4 class="card-title linear col-12">Patient Referral</h4>
+                            <h4 class="card-title">Patient Referral</h4>
                         </div>
 
-                        <div class="card-body card-dashboard pt-1 row">
+                        <div class="card-content">
                             <div class="card-body card-dashboard pt-1 row">
                                 <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
                                     <label for="Patient_Person_Name">Referral Type</label>
@@ -125,17 +142,17 @@
                                     <label for="Patient_Person_Address_Email">Referral Notes</label>
                                     @Html.TextAreaFor(model => model.Referral.Notes, new { @class = "form-control", placeholder = "Referral Notes" })
                                     <div class="form-control-position">
-                                        <i class="feather icon-list"></i>
+                                        <i class="fa fa-sticky-note-o"></i>
                                     </div>
                                 </fieldset>
                             </div>
                         </div>
 
                         <div class="card-header pt-0">
-                            <h4 class="card-title linear col-12">Room to Visit</h4>
+                            <h4 class="card-title">Room to Visit</h4>
                         </div>
 
-                        <div class="card-body card-dashboard pt-1 row">
+                        <div class="card-content">
                             <div class="card-body card-dashboard pt-1 row">
                                 <fieldset class="col-12 col-sm-6 col-lg-4 form-group has-icon-left">
                                     <label for="Patient_Person_Name">Room Type</label>
@@ -181,12 +198,12 @@
                                     </div>
                                 </fieldset>
 
-                                 <div class="col-12 d-flex flex-sm-row flex-column justify-content-end mt-1">
-                                     <button type="submit" class="btn btn-primary glow mb-1 mb-sm-0 mr-0 mr-sm-1">
-                                         Save
-                                     </button>
-                                     <button type="reset" class="btn btn-outline-danger">Cancel</button>
-                                 </div>
+                                <div class="col-12 d-flex flex-sm-row flex-column justify-content-end mt-1">
+                                    <button type="submit" class="btn btn-primary glow mb-1 mb-sm-0 mr-0 mr-sm-1">
+                                        Save
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-danger">Cancel</button>
+                                </div>
                             </div>
                         </div>
                     </div>

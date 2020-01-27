@@ -26,6 +26,7 @@ namespace AfyaHMIS.ViewModel
     {
         public Patient Patient { get; set; }
         public Queues Queue { get; set; }
+        public Queues RefQs { get; set; }
         public Queues SendTo { get; set; }
         public Triage Triage { get; set; }
 
@@ -37,9 +38,13 @@ namespace AfyaHMIS.ViewModel
         public IEnumerable<SelectListItem> Types { get; set; }
         public IEnumerable<SelectListItem> Priority { get; set; }
 
+        public bool AllowSendTo { get; set; }
+        public string ReturnUrls { get; set; }
+
         public OutpatientTriageViewVModel() {
             Patient = new Patient();
             Queue = new Queues();
+            RefQs = new Queues();
             SendTo = new Queues();
             Triage = new Triage();
 
@@ -50,16 +55,23 @@ namespace AfyaHMIS.ViewModel
             Rooms = new List<SelectListItem>();
             Types = new List<SelectListItem>();
             Priority = new List<SelectListItem>();
+
+            AllowSendTo = true;
+            ReturnUrls = "";
         }
     }
 
     public class OutpatientDoctorViewVModel {
         public Patient Patient { get; set; }
         public Queues Queue { get; set; }
+        public Triage TData { get; set; }
+        public List<Triage> Triage { get; set; }
 
         public OutpatientDoctorViewVModel() {
             Patient = new Patient();
             Queue = new Queues();
+            TData = new Triage();
+            Triage = new List<Triage>();
         }
     }
 

@@ -30,6 +30,18 @@ namespace AfyaHMIS.Controllers
             return View();
         }
 
+        [Route("/dashboard/clinical")]
+        public IActionResult DashboardClinical()
+        {
+            return View();
+        }
+
+        [Route("/dashboard/analytical")]
+        public IActionResult DashboardAnalytical()
+        {
+            return View();
+        }
+
         [Route("/notifications")]
         public IActionResult Notifications() {
             return View();
